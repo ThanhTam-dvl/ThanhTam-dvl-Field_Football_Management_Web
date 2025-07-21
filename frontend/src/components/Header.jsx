@@ -1,16 +1,17 @@
 import { useState } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
+  const toggleMenu = () => setMenuOpen(!menuOpen);
   const openLogin = () => {
     document.getElementById('login-modal')?.classList.add('active');
     document.body.style.overflow = 'hidden';
   };
+
+  const isActive = (path) => location.pathname === path ? 'active' : '';
 
   return (
     <>
@@ -22,11 +23,11 @@ function Header() {
             </div>
             <nav className="main-nav">
               <ul>
-                <li><a href="/" className="active">Trang chủ</a></li>
-                <li><a href="/booking">Đặt sân</a></li>
-                <li><a href="/find-match">Tìm kèo</a></li>
-                <li><a href="/join-team">Ghép đội</a></li>
-                <li><a href="/contact">Liên hệ</a></li>
+                <li><Link to="/" className={isActive('/')}>Trang chủ</Link></li>
+                <li><Link to="/booking" className={isActive('/booking')}>Đặt sân</Link></li>
+                <li><Link to="/find-match" className={isActive('/find-match')}>Tìm kèo</Link></li>
+                <li><Link to="/join-team" className={isActive('/join-team')}>Ghép đội</Link></li>
+                <li><Link to="/contact" className={isActive('/contact')}>Liên hệ</Link></li>
               </ul>
             </nav>
             <div className="user-actions">
@@ -43,11 +44,11 @@ function Header() {
 
       <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
         <ul>
-          <li><a href="/" className="active">Trang chủ</a></li>
-          <li><a href="/booking">Đặt sân</a></li>
-          <li><a href="/find-match">Tìm kèo</a></li>
-          <li><a href="/join-team">Ghép đội</a></li>
-          <li><a href="/contact">Liên hệ</a></li>
+          <li><Link to="/" className={isActive('/')}>Trang chủ</Link></li>
+          <li><Link to="/booking" className={isActive('/booking')}>Đặt sân</Link></li>
+          <li><Link to="/find-match" className={isActive('/find-match')}>Tìm kèo</Link></li>
+          <li><Link to="/join-team" className={isActive('/join-team')}>Ghép đội</Link></li>
+          <li><Link to="/contact" className={isActive('/contact')}>Liên hệ</Link></li>
           <li>
             <a href="#" className="login-mobile" onClick={openLogin}>
               <i className="fas fa-user"></i> Đăng nhập
