@@ -48,9 +48,7 @@ function Header() {
                   <Link to="/profile">
                     <i className="fas fa-user-circle"></i> {user.name || 'Tài khoản'}
                   </Link>
-                  <button onClick={handleLogout} style={{
-                    position: 'absolute', top: '100%', left: 0, background: 'white', border: '1px solid #ccc', padding: '5px 10px', cursor: 'pointer', zIndex: 10
-                  }}>Đăng xuất</button>
+                  
                 </div>
               ) : (
                 <button className="login-btn" onClick={openLogin}>

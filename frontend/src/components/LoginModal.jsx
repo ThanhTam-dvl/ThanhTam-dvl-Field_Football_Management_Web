@@ -65,11 +65,11 @@ function LoginModal() {
     try {
       setIsLoading(true);
       const res = await verifyOtp(phone, otp);
-      login(res.user);
+      login(res.data.user); // <-- Sửa lại ở đây
       const modal = document.getElementById('login-modal');
       modal?.classList.remove('active');
       document.body.style.overflow = '';
-      navigate('/profile'); // ✅ điều hướng sang hồ sơ
+      navigate('/');
     } catch (err) {
       console.error(err);
       alert('Mã OTP không đúng hoặc hết hạn');
