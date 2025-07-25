@@ -62,8 +62,13 @@ football-field-management/
 │   │   │       ├── admin.css
 │   │   │       └── ...
 │   │   ├── components/
-│   │   │   ├── Navbar.js
+│   │   │   ├── Header.js
 │   │   │   ├── Footer.js
+│   │   │   ├── LoginModal.js
+│   │   │   ├── BookingModal.js
+│   │   │   ├── BookingSearchForm.js
+│   │   │   ├── Features.js
+│   │   │   ├── FieldStatus.js
 │   │   │   ├── FieldCard.js
 │   │   │   └── BookingForm.js
 │   │   ├── pages/                 # các trang cho người dùng

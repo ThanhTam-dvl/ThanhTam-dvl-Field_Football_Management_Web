@@ -6,6 +6,7 @@ import BookingSearchForm from '../components/BookingSearchForm';
 import FieldCard from '../components/FieldCard';
 import BookingModal from '../components/BookingModal';
 import { createBooking } from '../services/bookingService';
+import LoginModal from '../components/LoginModal';
 
 function Booking() {
   const [fields, setFields] = useState([]);
@@ -71,8 +72,9 @@ const handleConfirmBooking = async () => {
               ) : (
                 <p>
                   Ngày: {formatDateForDisplay(searchInfo.date)} | 
-                  Thời gian: {searchInfo.startTime}:00 - {searchInfo.endTime}:00 | 
-                  Loại sân: {searchInfo.fieldTypes.map(t => `${t} người`).join(', ')}
+                  Thời gian: {searchInfo.startTime}:00 - {searchInfo.endTime}:00
+                  ({parseInt(searchInfo.endTime) - parseInt(searchInfo.startTime)} giờ) | 
+                  Loại sân: {searchInfo.fieldTypes.join(', ')} người
                 </p>
               )}
             </div>
@@ -99,6 +101,7 @@ const handleConfirmBooking = async () => {
         />
       )}
       <Footer />
+      <LoginModal />
     </>
   );
 }

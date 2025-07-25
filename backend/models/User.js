@@ -47,7 +47,23 @@ const User = {
   softDelete: (id, callback) => {
     const sql = `UPDATE users SET is_active = 0 WHERE id = ?`;
     db.query(sql, [id], callback);
+  },
+
+  createIfNotExist: (phone, callback) => {
+    const check = `SELECT * FROM users WHERE phone_number = ?`;
+    db.query(check, [phone], (err, result) => {
+      if (err) return callback(err);
+      if (result.length > 0) return callback(null, result[0]);
+
+      const insert = `INSERT INTO users (phone_number, name) VALUES (?, 'Người dùng mới')`;
+      db.query(insert, [phone], (err2) => {
+        if (err2) return callback(err2);
+        db.query(check, [phone], callback);
+      });
+    });
   }
 };
+
+
 
 module.exports = User;

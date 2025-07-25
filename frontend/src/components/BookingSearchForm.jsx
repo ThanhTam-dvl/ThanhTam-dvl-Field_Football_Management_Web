@@ -60,26 +60,23 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.date || !form.startTime || !form.endTime || form.fieldTypes.length === 0) {
-      alert('Vui lòng nhập đầy đủ thông tin');
+    const start = parseInt(form.startTime);
+    const end = parseInt(form.endTime);
+    const duration = end - start;
+
+    if (duration < 1 || duration > 3) {
+      alert('Bạn chỉ được phép đặt sân từ 1 đến 3 giờ.');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Gọi API để lấy dữ liệu sân trống
-      const data = await fetchAvailableFields({
-        date: form.date,
-        startTime: form.startTime,
-        endTime: form.endTime,
-        fieldTypes: form.fieldTypes
-      });
-      
-      setFields(data);
+      const fields = await fetchAvailableFields(form);
+      setFields(fields);
       setSearchInfo(form);
     } catch (err) {
-      console.error('Lỗi khi tìm sân trống:', err);
-      alert('Có lỗi xảy ra khi tìm sân trống. Vui lòng thử lại.');
+      console.error(err);
+      alert('Lỗi khi tìm sân trống.');
       setFields([]);
     } finally {
       setIsLoading(false);
@@ -167,6 +164,11 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
           )}
         </button>
       </form>
+      <p>
+        Ngày: {form.date} | Thời gian: {form.startTime}:00 - {form.endTime}:00 
+        ({parseInt(form.endTime) - parseInt(form.startTime)} giờ) |
+        Loại sân: {form.fieldTypes.join(', ')} người
+      </p>
     </div>
   );
 }
