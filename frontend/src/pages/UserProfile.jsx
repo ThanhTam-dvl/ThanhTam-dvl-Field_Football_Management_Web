@@ -2,23 +2,43 @@ import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import API from '../services/api';
 
 function UserProfile() {
   const { user, login, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ name: '', email: '' });
   const [stats, setStats] = useState({ total: 0, cancelled: 0 });
+  const bookingInfo = location.state?.bookingInfo;
 
   useEffect(() => {
     if (user?.id) {
       API.get(`/users/${user.id}`).then((res) => {
-        setForm({ name: res.data.name || '', email: res.data.email || '' });
+        setForm({
+          name: res.data.name || '',
+          email: res.data.email || '',
+          phone_number: res.data.phone_number || user.phone_number || '',
+        });
         setStats({
           total: res.data.total_bookings || 0,
           cancelled: res.data.cancelled_bookings || 0,
         });
+      }).catch(() => {
+        // Nếu lỗi (ví dụ user mới chưa có trên DB), vẫn lấy số điện thoại từ context
+        setForm({
+          name: '',
+          email: '',
+          phone_number: user.phone_number || '',
+        });
+      });
+    } else if (user?.phone_number) {
+      // Nếu chưa có id (user mới), vẫn set số điện thoại
+      setForm({
+        name: '',
+        email: '',
+        phone_number: user.phone_number,
       });
     }
   }, [user]);
@@ -31,19 +51,24 @@ function UserProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.put(`/users/${user.id}`, {
-        ...form,
-        phone_number: user.phone_number,
+      await API.put(`/users/${user.id}`, {
+        name: form.name,
+        email: form.email,
+      });
+      // Lấy lại user mới nhất từ API
+      const res = await API.get(`/users/${user.id}`);
+      login(res.data); // cập nhật context
+      setForm({
+        name: res.data.name || '',
+        email: res.data.email || '',
+        phone_number: res.data.phone_number || user.phone_number || '',
       });
       alert('Cập nhật thành công');
-      login({ ...user, ...form });
-    } catch (err) {
-      console.error('API error:', err);
-      if (err.response) {
-        alert('Lỗi khi cập nhật: ' + (err.response.data.message || JSON.stringify(err.response.data)));
-      } else {
-        alert('Lỗi khi cập nhật: ' + err.message);
+      if (bookingInfo) {
+        navigate('/booking', { state: { bookingInfo } });
       }
+    } catch (err) {
+      alert('Lỗi khi cập nhật: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -93,7 +118,7 @@ function UserProfile() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Số điện thoại</label>
-                    <input value={user.phone_number} disabled />
+                    <input value={form.phone_number || ''} disabled />
                   </div>
                 </div>
                 <div className="form-row">

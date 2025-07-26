@@ -1,6 +1,7 @@
 // src/pages/Booking.jsx
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingSearchForm from '../components/BookingSearchForm';
@@ -11,6 +12,7 @@ import LoginModal from '../components/LoginModal';
 
 function Booking() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [fields, setFields] = useState([]);
   const [searchInfo, setSearchInfo] = useState(null);
   const [selected, setSelected] = useState(null); // {field, slot}
@@ -51,6 +53,10 @@ function Booking() {
     } else {
       setSelected({ field, slot });
     }
+  };
+
+  const handleEditBooking = (field, slot) => {
+    navigate('/profile', { state: { bookingInfo: { field, slot, searchInfo } } });
   };
 
   return (

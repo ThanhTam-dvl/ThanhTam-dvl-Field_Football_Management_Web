@@ -36,7 +36,7 @@ const User = {
 
   updateInfo: (id, data, callback) => {
     const sql = `UPDATE users SET name = ?, email = ? WHERE id = ?`;
-    db.query(sql, [data.name, data.email, id], callback);
+    db.query(sql, [data.name, data.email || null, id], callback);
   },
 
   findAll: (callback) => {
@@ -56,9 +56,13 @@ const User = {
       if (result.length > 0) return callback(null, result[0]);
 
       const insert = `INSERT INTO users (phone_number, name) VALUES (?, 'Người dùng mới')`;
-      db.query(insert, [phone], (err2) => {
+      db.query(insert, [phone], (err2, result2) => {
         if (err2) return callback(err2);
-        db.query(check, [phone], callback);
+        // Lấy lại user vừa tạo (có id)
+        db.query(check, [phone], (err3, result3) => {
+          if (err3) return callback(err3);
+          callback(null, result3[0]);
+        });
       });
     });
   }

@@ -13,8 +13,8 @@ exports.updateUser = (req, res) => {
   const id = req.params.id;
   const { name, email } = req.body;
 
-  if (!name || !email) {
-    return res.status(400).json({ error: 'Thiếu tên hoặc email' });
+  if (!name) {
+    return res.status(400).json({ error: 'Thiếu tên' });
   }
 
   User.updateInfo(id, { name, email }, (err) => {
