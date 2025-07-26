@@ -1,12 +1,7 @@
 function FieldCard({ field, searchInfo, onBook }) {
+  const slot = (field.slots ?? [])[0];
   return (
-    <div
-      className="field-card"
-      data-field-id={field.id}
-      data-date={searchInfo.date}
-      data-start-time={searchInfo.startTime}
-      data-end-time={searchInfo.endTime}
-    >
+    <div className="field-card">
       <div className="field-card-header">
         <h3>{field.name}</h3>
         <p>{field.type}</p>
@@ -14,21 +9,25 @@ function FieldCard({ field, searchInfo, onBook }) {
       <div className="field-card-body">
         <div className="field-slots">
           <div className="field-slots-title">Khung giờ trống:</div>
-          <div className="slots-list">
-            {field.slots.map((slot, idx) => (
-              <span key={idx} className="time-slot-tag">{slot}</span>
-            ))}
+          <div className="slots-list" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {slot ? (
+              <>
+                <span className="time-slot-tag">
+                  {slot.label} <b>{slot.price.toLocaleString()} VNĐ</b>
+                </span>
+                <button
+                  className="book-now-btn"
+                  onClick={() => onBook(field, slot)}
+                  style={{ marginLeft: 8 }}
+                >
+                  Đặt ngay
+                </button>
+              </>
+            ) : (
+              <span className="no-slot">Không còn khung giờ phù hợp</span>
+            )}
           </div>
         </div>
-      </div>
-      <div className="field-card-footer">
-        <div className="field-price">
-          {field.price}
-          <span className="price-per-hour">{field.pricePerHour}</span>
-        </div>
-        <button className="book-now-btn" onClick={onBook}>
-          Đặt ngay
-        </button>
       </div>
     </div>
   );

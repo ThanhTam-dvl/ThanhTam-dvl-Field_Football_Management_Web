@@ -12,6 +12,12 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
   const [endTimeOptions, setEndTimeOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const timeOptions = [];
+  for (let h = 6; h <= 22; h++) {
+    timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
+    if (h < 22) timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
+  }
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -109,8 +115,8 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
               required
             >
               <option value="" disabled>Chọn giờ</option>
-              {[...Array(17).keys()].map((h) => (
-                <option key={h + 6} value={h + 6}>{h + 6}:00</option>
+              {timeOptions.slice(0, -1).map((t) => (
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
           </div>
@@ -125,9 +131,11 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
               disabled={!form.startTime}
             >
               <option value="" disabled>Chọn giờ</option>
-              {endTimeOptions.map((hour) => (
-                <option key={hour} value={hour}>{hour}:00</option>
-              ))}
+              {timeOptions
+                .filter(t => t > form.startTime)
+                .map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
             </select>
           </div>
         </div>

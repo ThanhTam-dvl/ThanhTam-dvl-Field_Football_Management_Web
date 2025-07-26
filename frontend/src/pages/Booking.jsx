@@ -11,36 +11,30 @@ import LoginModal from '../components/LoginModal';
 function Booking() {
   const [fields, setFields] = useState([]);
   const [searchInfo, setSearchInfo] = useState(null);
-  const [selectedField, setSelectedField] = useState(null);
+  const [selected, setSelected] = useState(null); // {field, slot}
 
-  // ánh xạ giờ bắt đầu → time_slot_id (nếu backend cần)
-const mapTimeToSlotId = (startTime) => {
-  const map = {
-    6: 1, 8: 2, 10: 3, 12: 4,
-    14: 5, 16: 6, 18: 7, 20: 8
+  // Xử lý khi xác nhận đặt sân từ BookingModal
+  const handleConfirmBooking = async (form) => {
+    try {
+      const payload = {
+        user_id: 1, // TODO: lấy từ AuthContext
+        field_id: selected.field.id,
+        booking_date: searchInfo.date,
+        start_time: selected.slot.start_time,
+        end_time: selected.slot.end_time,
+        total_amount: selected.slot.price,
+        payment_method: form.payment,
+        notes: form.note,
+      };
+
+      await createBooking(payload);
+      alert('Đặt sân thành công!');
+      setSelected(null);
+    } catch (err) {
+      console.error(err);
+      alert('Đặt sân thất bại!');
+    }
   };
-  return map[parseInt(startTime)];
-};
-
-// Xử lý khi xác nhận đặt sân từ BookingModal
-const handleConfirmBooking = async () => {
-  try {
-    const payload = {
-      user_id: 1, // TODO: lấy từ AuthContext
-      field_id: selectedField.id,
-      booking_date: searchInfo.date,
-      time_slot_id: mapTimeToSlotId(searchInfo.startTime),
-      total_amount: selectedField.priceNumeric || 300000, // backend phải hỗ trợ hoặc xử lý từ client
-    };
-
-    await createBooking(payload);
-    alert('Đặt sân thành công!');
-    setSelectedField(null);
-  } catch (err) {
-    console.error(err);
-    alert('Đặt sân thất bại!');
-  }
-};
 
   // Hàm định dạng ngày: yyyy-mm-dd -> dd/mm/yyyy
   const formatDateForDisplay = (dateString) => {
@@ -85,18 +79,19 @@ const handleConfirmBooking = async () => {
                   key={field.id}
                   field={field}
                   searchInfo={searchInfo}
-                  onBook={() => setSelectedField(field)}
+                  onBook={(field, slot) => setSelected({ field, slot })}
                 />
               ))}
             </div>
           </div>
         </section>
       </main>
-      {selectedField && (
+      {selected && (
         <BookingModal
-          field={selectedField}
+          field={selected.field}
+          slot={selected.slot}
           searchInfo={searchInfo}
-          onClose={() => setSelectedField(null)}
+          onClose={() => setSelected(null)}
           onConfirm={handleConfirmBooking}
         />
       )}

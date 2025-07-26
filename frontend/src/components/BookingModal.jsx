@@ -1,7 +1,7 @@
 // src/components/BookingModal.jsx
 import { useState } from 'react';
 
-function BookingModal({ field, searchInfo, onClose, onConfirm }) {
+function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
   const [form, setForm] = useState({
     phone: '',
     name: '',
@@ -48,11 +48,11 @@ function BookingModal({ field, searchInfo, onClose, onConfirm }) {
             </div>
             <div className="booking-info-item">
               <span className="label">Thời gian:</span>
-              <span id="modal-time">{searchInfo.startTime}:00 - {searchInfo.endTime}:00</span>
+              <span id="modal-time">{slot.label}</span>
             </div>
             <div className="booking-info-item">
               <span className="label">Giá:</span>
-              <span id="modal-price">{field.price}</span>
+              <span id="modal-price">{slot.price.toLocaleString()} VNĐ</span>
             </div>
           </div>
 
