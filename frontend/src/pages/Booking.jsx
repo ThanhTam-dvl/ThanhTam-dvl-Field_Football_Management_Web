@@ -1,5 +1,5 @@
 // src/pages/Booking.jsx
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -59,6 +59,14 @@ function Booking() {
     navigate('/profile', { state: { bookingInfo: { field, slot, searchInfo } } });
   };
 
+  const resultRef = useRef(null);
+  useEffect(() => {
+    if (searchInfo && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [searchInfo]);
+
+
   return (
     <>
       <Header />
@@ -74,7 +82,7 @@ function Booking() {
             <BookingSearchForm setFields={setFields} setSearchInfo={setSearchInfo} />
           </div>
         </section>
-        <section className="search-results">
+        <section className="search-results" ref={resultRef}>
           <div className="container">
             <div id="search-status" className="search-status">
               <h2>Kết quả tìm kiếm</h2>
