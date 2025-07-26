@@ -47,14 +47,10 @@ exports.getBookingsByDate = (req, res) => {
   const { date } = req.query;
   if (!date) return res.status(400).json({ error: 'Thiếu ngày' });
 
-  const sql = `
-    SELECT *, 
-    (SELECT start_time FROM time_slots WHERE id = bookings.time_slot_id) as time_slot_hour
-    FROM bookings 
-    WHERE booking_date = ?
-  `;
+  const sql = `SELECT field_id, start_time, end_time FROM bookings WHERE booking_date = ?`;
   db.query(sql, [date], (err, results) => {
     if (err) return res.status(500).json({ error: 'Lỗi truy vấn' });
     res.json(results);
   });
 };
+

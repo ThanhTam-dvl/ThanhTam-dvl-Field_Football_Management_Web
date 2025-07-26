@@ -1,12 +1,14 @@
 // src/components/BookingModal.jsx
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
+  const { user } = useAuth();
   const [form, setForm] = useState({
-    phone: '',
-    name: '',
+    phone: user?.phone_number || '',
+    name: user?.name || '',
     note: '',
-    payment: 'cash'
+    payment: 'cash',
   });
 
   const handleChange = (e) => {

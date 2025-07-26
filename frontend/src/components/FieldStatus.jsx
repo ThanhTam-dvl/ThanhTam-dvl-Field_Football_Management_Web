@@ -22,18 +22,23 @@ function FieldStatus() {
 
   const nextDate = () => setDate(new Date(date.setDate(date.getDate() + 1)));
   const prevDate = () => setDate(new Date(date.setDate(date.getDate() - 1)));
+  const isTimeBetween = (target, start, end) => {
+    return target >= start && target < end;
+  };
 
   const renderTimeline = (fieldId) => {
-    const blocks = [];
+  const blocks = [];
 
-    for (let hour = 6; hour < 22; hour += 2) {
+  for (let hour = 6; hour < 22; hour++) {
+    for (let minute of [0, 30]) {
+      const blockTime = `${hour.toString().padStart(2, '0')}:${minute === 0 ? '00' : '30'}:00`;
       let status = 'available';
 
-      const hasBooking = bookings.find(
-        b => b.field_id === fieldId && b.time_slot_hour === hour
+      const hasBooking = bookings.some(
+        b => b.field_id === fieldId && isTimeBetween(blockTime, b.start_time, b.end_time)
       );
-      const isMaintained = maintenances.find(
-        m => m.field_id === fieldId && parseInt(m.start_time) <= hour && hour < parseInt(m.end_time)
+      const isMaintained = maintenances.some(
+        m => m.field_id === fieldId && isTimeBetween(blockTime, m.start_time, m.end_time)
       );
 
       if (isMaintained) status = 'maintenance';
@@ -41,16 +46,20 @@ function FieldStatus() {
 
       blocks.push(
         <div
-          key={hour}
+          key={`${hour}:${minute}`}
           className={`time-block ${status}`}
-          style={{ left: `${(hour - 6) * 100 / 16}%`, width: `12.5%` }}
-          title={`${hour}:00 - ${hour + 2}:00`}
+          style={{
+            left: `${((hour - 6) * 2 + (minute === 30 ? 1 : 0)) * 100 / 32}%`,
+            width: `3.125%`,
+          }}
+          title={`${blockTime}`}
         ></div>
       );
     }
+  }
 
-    return <div className="timeline">{blocks}</div>;
-  };
+  return <div className="timeline">{blocks}</div>;
+};
 
   return (
     <section className="fields-status">

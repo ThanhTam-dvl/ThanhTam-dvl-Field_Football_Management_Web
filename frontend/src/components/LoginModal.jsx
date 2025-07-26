@@ -65,18 +65,28 @@ function LoginModal() {
     try {
       setIsLoading(true);
       const res = await verifyOtp(phone, otp);
-      login(res.data.user); // <-- Sửa lại ở đây
+      login(res.data.user);
+
       const modal = document.getElementById('login-modal');
-      modal?.classList.remove('active');
       document.body.style.overflow = '';
-      navigate('/');
+      modal?.classList.remove('active');
+
+      // 👇 THÊM kiểm tra tên
+      if (
+        !res.data.user.name ||
+        res.data.user.name.trim().toLowerCase() === 'người dùng mới'
+      ) {
+        navigate('/profile'); // → Bắt người dùng cập nhật tên
+      }
+
     } catch (err) {
       console.error(err);
-      alert('Mã OTP không đúng hoặc hết hạn');
+      alert('Mã OTP không đúng hoặc đã hết hạn');
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="login-modal" id="login-modal">

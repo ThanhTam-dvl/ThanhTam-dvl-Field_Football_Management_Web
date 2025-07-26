@@ -1,5 +1,6 @@
 // src/pages/Booking.jsx
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import BookingSearchForm from '../components/BookingSearchForm';
@@ -9,6 +10,7 @@ import { createBooking } from '../services/bookingService';
 import LoginModal from '../components/LoginModal';
 
 function Booking() {
+  const { user } = useAuth();
   const [fields, setFields] = useState([]);
   const [searchInfo, setSearchInfo] = useState(null);
   const [selected, setSelected] = useState(null); // {field, slot}
@@ -40,6 +42,15 @@ function Booking() {
   const formatDateForDisplay = (dateString) => {
     const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
+  };
+
+  const handleBook = (field, slot) => {
+    if (!user) {
+      document.getElementById('login-modal')?.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    } else {
+      setSelected({ field, slot });
+    }
   };
 
   return (
@@ -79,7 +90,7 @@ function Booking() {
                   key={field.id}
                   field={field}
                   searchInfo={searchInfo}
-                  onBook={(field, slot) => setSelected({ field, slot })}
+                  onBook={handleBook} // Truyền handleBook vào FieldCard
                 />
               ))}
             </div>
