@@ -9,7 +9,10 @@ const matchRoutes = require('./routes/matchRoutes');
 const serviceRoutes = require('./routes/serviceRoutes'); 
 const authRoutes = require('./routes/authRoutes'); 
 const maintenanceRoutes = require('./routes/maintenanceRoutes'); 
+const teamJoinRoutes = require('./routes/teamJoinRoutes'); 
 const userRoutes = require('./routes/userRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+
 const db = require('./config/db');
 
 const app = express();
@@ -24,6 +27,8 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/auth', authRoutes); 
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/team-join', teamJoinRoutes); 
+app.use('/api/contact', contactRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

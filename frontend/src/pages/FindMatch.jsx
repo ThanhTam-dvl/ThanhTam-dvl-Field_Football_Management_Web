@@ -32,12 +32,11 @@ function FindMatch() {
   const handleFilterSubmit = (e) => {
     e.preventDefault();
     const form = e.target;
-    const newFilter = {
-      date: form.date.value,
-      time: form.time.value,
-      type: form.type.value,
-      level: form.level.value
-    };
+    const newFilter = {};
+    if (form.date.value) newFilter.date = form.date.value;
+    if (form.time.value) newFilter.time = form.time.value;
+    if (form.type.value) newFilter.type = form.type.value;
+    if (form.level.value) newFilter.level = form.level.value;
     setFilter(newFilter);
   };
 

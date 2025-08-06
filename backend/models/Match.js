@@ -5,31 +5,51 @@ const Match = {
   create: (data, callback) => {
     const sql = `
       INSERT INTO matches 
-      (creator_id, field_id, match_date, time_slot_id, max_players, level, age_min, age_max, price_per_person, description, contact_name, contact_phone, position_needed, players_needed)
+      (creator_id, field_id, field_type, match_date, start_time, end_time, level, age_min, age_max, price_per_person, description, contact_name, contact_phone, allow_join)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
       data.creator_id,
       data.field_id,
+      data.field_type,
       data.match_date,
-      data.time_slot_id,
-      data.max_players,
-      data.level || 'intermediate',
-      data.age_min || null,
-      data.age_max || null,
+      data.start_time,
+      data.end_time,
+      data.level,
+      data.age_min,
+      data.age_max,
       data.price_per_person,
-      data.description || null,
-      data.contact_name || null,
-      data.contact_phone || null,
-      data.position_needed || 'any',
-      data.players_needed || 1
+      data.description,
+      data.contact_name,
+      data.contact_phone,
+      data.allow_join ? 1 : 0
     ];
     db.query(sql, values, callback);
   },
 
-  listOpenMatches: (callback) => {
-    const sql = `SELECT * FROM matches WHERE status = 'open' ORDER BY match_date ASC`;
-    db.query(sql, callback);
+  listOpenMatches: (filter = {}, callback) => {
+    let sql = `SELECT * FROM matches WHERE status = 'open' AND match_date >= CURDATE()`;
+    const params = [];
+
+    if (filter.date) {
+      sql += ' AND match_date = ?';
+      params.push(filter.date);
+    }
+    if (filter.time) {
+      sql += ' AND start_time = ?';
+      params.push(filter.time);
+    }
+    if (filter.type) {
+      sql += ' AND field_type = ?';
+      params.push(filter.type);
+    }
+    if (filter.level) {
+      sql += ' AND level = ?';
+      params.push(filter.level);
+    }
+
+    sql += ' ORDER BY match_date ASC, start_time ASC';
+    db.query(sql, params, callback);
   }
 };
 

@@ -4,18 +4,19 @@ const MatchParticipant = require('../models/MatchParticipant');
 
 exports.createMatch = (req, res) => {
   const data = req.body;
-  if (!data.creator_id || !data.field_id || !data.match_date || !data.time_slot_id || !data.max_players || !data.price_per_person) {
-    return res.status(400).json({ error: 'Thiếu thông tin trận đấu' });
+  if (!data.creator_id || !data.field_id || !data.match_date || !data.start_time || !data.end_time || !data.contact_name || !data.contact_phone || !data.field_type) {
+    return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
   }
 
   Match.create(data, (err, result) => {
-    if (err) return res.status(500).json({ error: 'Lỗi tạo trận đấu' });
+    if (err) return res.status(500).json({ error: 'Lỗi tạo trận đấu', details: err });
     res.status(201).json({ message: 'Tạo trận thành công', matchId: result.insertId });
   });
 };
 
 exports.listMatches = (req, res) => {
-  Match.listOpenMatches((err, results) => {
+  const filter = req.query || {};
+  Match.listOpenMatches(filter, (err, results) => {
     if (err) return res.status(500).json({ error: 'Không lấy được danh sách trận' });
     res.json(results);
   });

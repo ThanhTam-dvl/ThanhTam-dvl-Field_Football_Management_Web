@@ -6,7 +6,8 @@ function CreateMatchModal({ onClose, onRefresh }) {
   const [form, setForm] = useState({
     field_type: '5vs5',
     match_date: new Date().toISOString().split('T')[0],
-    time_slot: '',
+    start_time: '',
+    end_time: '',
     level: 'intermediate',
     age_min: 18,
     age_max: 30,
@@ -15,11 +16,9 @@ function CreateMatchModal({ onClose, onRefresh }) {
     contact_name: '',
     contact_phone: '',
     allow_join: true,
-    max_players: 10, // Thêm mặc định
-    field_id: '',    // Thêm trường này
+    field_id: 1
   });
 
-  // Lấy user từ localStorage
   const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
@@ -41,12 +40,9 @@ function CreateMatchModal({ onClose, onRefresh }) {
       return;
     }
     try {
-      // Giả sử bạn chọn field_id là 1 (hoặc cho user chọn sân)
       const data = {
         ...form,
-        creator_id: user.id,
-        field_id: 1, // TODO: Cho user chọn sân, tạm thời fix cứng
-        time_slot_id: form.time_slot, // Gửi đúng tên trường backend
+        creator_id: user.id
       };
       await createMatch(data);
       onRefresh();
@@ -57,6 +53,12 @@ function CreateMatchModal({ onClose, onRefresh }) {
       alert('Lỗi khi tạo kèo');
     }
   };
+
+  const timeOptions = [];
+  for (let h = 6; h <= 21; h++) {
+    timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
+    timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
+  }
 
   return (
     <div className="create-match-modal active" onClick={onClose}>
@@ -72,13 +74,23 @@ function CreateMatchModal({ onClose, onRefresh }) {
               <input type="date" name="match_date" value={form.match_date} onChange={handleChange} required />
             </div>
             <div className="form-group">
-              <label>Giờ đá</label>
-              <select name="time_slot" value={form.time_slot} onChange={handleChange} required>
+              <label>Giờ bắt đầu</label>
+              <select name="start_time" value={form.start_time} onChange={handleChange} required>
                 <option value="">Chọn giờ</option>
-                {[...Array(16)].map((_, i) => {
-                  const h = i + 6;
-                  return <option key={h} value={h}>{h}:00</option>;
-                })}
+                {timeOptions.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Giờ kết thúc</label>
+              <select name="end_time" value={form.end_time} onChange={handleChange} required>
+                <option value="">Chọn giờ</option>
+                {timeOptions
+                  .filter(t => t > form.start_time)
+                  .map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
               </select>
             </div>
           </div>
