@@ -54,7 +54,9 @@ function UserProfile() {
       await API.put(`/users/${user.id}`, {
         name: form.name,
         email: form.email,
+        phone_number: form.phone_number || '', // Nếu người dùng không nhập số điện thoại, gửi trống
       });
+
       // Lấy lại user mới nhất từ API
       const res = await API.get(`/users/${user.id}`);
       login(res.data); // cập nhật context
@@ -118,9 +120,15 @@ function UserProfile() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Số điện thoại</label>
-                    <input value={form.phone_number || ''} disabled />
+                    <input
+                      name="phone_number"
+                      value={form.phone_number}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
                 </div>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="name">Tên</label>

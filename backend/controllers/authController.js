@@ -1,40 +1,79 @@
 // backend/controllers/authController.js
-const Otp = require('../models/Otp');
-const User = require('../models/User');
+const db = require('../config/db');
+const nodemailer = require('nodemailer');
 
-exports.sendOtp = (req, res) => {
-  const { phone_number } = req.body;
-  if (!phone_number) return res.status(400).json({ error: 'Thiếu số điện thoại' });
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000);
+}
 
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 3 * 60 * 1000); // 3 phút
+exports.sendOtp = async (req, res) => {
+  const rawEmail = req.body.email;
+  if (!rawEmail) return res.status(400).json({ error: 'Thiếu email' });
 
-  Otp.insertCode(phone_number, otpCode, expiresAt, (err) => {
-    if (err) return res.status(500).json({ error: 'Lỗi gửi mã OTP' });
+  const email = rawEmail.trim().toLowerCase();
+  const otpCode = generateOTP();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    // 📝 gửi thật thì tích hợp SMS, còn giờ log ra
-    console.log(`📩 OTP cho ${phone_number} là ${otpCode}`);
-    res.json({ message: 'Đã gửi mã OTP (giả lập)', otpCode }); // bạn có thể ẩn không trả về mã thật
-  });
+  db.query(
+    'INSERT INTO otps (email, otp, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp=?, expires_at=?',
+    [email, otpCode, expiresAt, otpCode, expiresAt],
+    async (err) => {
+      if (err) return res.status(500).json({ error: 'Lỗi ghi OTP', details: err });
+
+      try {
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASS
+          }
+        });
+
+        await transporter.sendMail({
+          from: process.env.MAIL_USER,
+          to: email,
+          subject: 'Mã xác thực OTP - FootballField',
+          html: `<p>Mã xác thực của bạn là: <b>${otpCode}</b>. Mã này có hiệu lực trong 5 phút.</p>`
+        });
+
+        res.status(200).json({ message: 'Đã gửi OTP đến email' });
+      } catch (mailErr) {
+        res.status(500).json({ error: 'Lỗi gửi email', details: mailErr });
+      }
+    }
+  );
 };
 
 exports.verifyOtp = (req, res) => {
-  const { phone_number, otp_code } = req.body;
-  if (!phone_number || !otp_code) {
-    return res.status(400).json({ error: 'Thiếu số điện thoại hoặc mã OTP' });
-  }
+  const rawEmail = req.body.email;
+  const otp = req.body.otp;
+  if (!rawEmail || !otp) return res.status(400).json({ error: 'Thiếu thông tin' });
 
-  Otp.verifyCode(phone_number, otp_code, (err, results) => {
-    if (err || results.length === 0) return res.status(401).json({ error: 'Mã OTP không hợp lệ hoặc hết hạn' });
+  const email = rawEmail.trim().toLowerCase();
 
-    const otp = results[0];
-    Otp.markUsed(otp.id, () => {});
+  db.query(
+    'SELECT * FROM otps WHERE email = ? AND otp = ? AND expires_at > NOW()',
+    [email, otp],
+    (err, results) => {
+      if (err || results.length === 0) return res.status(400).json({ error: 'OTP không hợp lệ hoặc đã hết hạn' });
 
-    User.createIfNotExist(phone_number, (err2, user) => {
-      if (err2) return res.status(500).json({ error: 'Lỗi đăng nhập' });
+      db.query('SELECT * FROM users WHERE email = ?', [email], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Lỗi kiểm tra user' });
 
-      // Nếu cần bảo mật hơn, có thể tạo JWT ở đây
-      res.json({ message: 'Đăng nhập thành công', user });
-    });
-  });
+        if (rows.length > 0) {
+          return res.status(200).json({ message: 'Đăng nhập thành công', user: rows[0] });
+        } else {
+          const defaultName = 'Người dùng mới';
+          db.query(
+            'INSERT INTO users (email, name) VALUES (?, ?)',
+            [email, defaultName],
+            (err2, result) => {
+              if (err2) return res.status(500).json({ error: 'Lỗi tạo user mới', details: err2 });
+              res.status(200).json({ message: 'Tạo tài khoản mới thành công', user: { id: result.insertId, email, name: defaultName } });
+            }
+          );
+        }
+      });
+    }
+  );
 };

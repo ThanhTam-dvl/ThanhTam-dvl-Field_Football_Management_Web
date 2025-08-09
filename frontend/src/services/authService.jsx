@@ -1,11 +1,12 @@
-// src/services/authService.js
+// services/authService.js
 import API from './api';
 
-export const sendOtp = (phoneNumber) =>
-  API.post('/auth/send-otp', { phone_number: phoneNumber });
+export const sendOtp = async (email) => {
+  const res = await API.post('/auth/send-otp', { email });
+  return res.data;
+};
 
-export const verifyOtp = (phoneNumber, otpCode) =>
-  API.post('/auth/verify-otp', {
-    phone_number: phoneNumber,
-    otp_code: otpCode,
-  });
+export const verifyOtp = async (email, otp) => {
+  const res = await API.post('/auth/verify-otp', { email, otp });
+  return res;
+};

@@ -1,4 +1,5 @@
 // src/pages/Home.js
+import { useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FieldStatus from '../components/FieldStatus';
@@ -6,6 +7,20 @@ import Features from '../components/Features';
 import LoginModal from '../components/LoginModal';
 
 function Home() {
+  const heroRef = useRef(null);
+  useEffect(() => {
+    // Hiệu ứng parallax
+    const handleScroll = () => {
+      if (heroRef.current) {
+        const scrollY = window.scrollY;
+        heroRef.current.style.backgroundPositionY = `${scrollY * 0.5}px`;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
   return (
     <>
       <Header />

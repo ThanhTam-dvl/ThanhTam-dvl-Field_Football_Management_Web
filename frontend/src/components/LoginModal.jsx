@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 
 function LoginModal() {
   const { login } = useAuth();
-  const navigate = useNavigate(); // Thêm dòng này
-  const [phone, setPhone] = useState('');
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState(1);
   const [timer, setTimer] = useState(60);
@@ -18,7 +18,7 @@ function LoginModal() {
     const closeModal = () => {
       modal.classList.remove('active');
       document.body.style.overflow = '';
-      setPhone('');
+      setEmail('');
       setOtp('');
       setStep(1);
       setTimer(60);
@@ -47,10 +47,10 @@ function LoginModal() {
   }, [step, timer]);
 
   const handleSendOtp = async () => {
-    if (!phone) return alert('Vui lòng nhập số điện thoại');
+    if (!email) return alert('Vui lòng nhập email');
     try {
       setIsLoading(true);
-      await sendOtp(phone);
+      await sendOtp(email);
       setStep(2);
     } catch (err) {
       console.error(err);
@@ -64,21 +64,16 @@ function LoginModal() {
     if (!otp) return;
     try {
       setIsLoading(true);
-      const res = await verifyOtp(phone, otp);
+      const res = await verifyOtp(email, otp);
       login(res.data.user);
 
       const modal = document.getElementById('login-modal');
       document.body.style.overflow = '';
       modal?.classList.remove('active');
 
-      // 👇 THÊM kiểm tra tên
-      if (
-        !res.data.user.name ||
-        res.data.user.name.trim().toLowerCase() === 'người dùng mới'
-      ) {
-        navigate('/profile'); // → Bắt người dùng cập nhật tên
+      if (!res.data.user.name || res.data.user.name.trim().toLowerCase() === 'người dùng mới') {
+        navigate('/profile');
       }
-
     } catch (err) {
       console.error(err);
       alert('Mã OTP không đúng hoặc đã hết hạn');
@@ -86,7 +81,6 @@ function LoginModal() {
       setIsLoading(false);
     }
   };
-
 
   return (
     <div className="login-modal" id="login-modal">
@@ -98,13 +92,13 @@ function LoginModal() {
         <div className="login-form">
           {step === 1 && (
             <div className="phone-input">
-              <label htmlFor="phone">Số điện thoại</label>
+              <label htmlFor="email">Email</label>
               <input
-                type="tel"
-                id="phone"
-                placeholder="Nhập số điện thoại"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                type="email"
+                id="email"
+                placeholder="Nhập email của bạn"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               <button id="send-otp" onClick={handleSendOtp} disabled={isLoading}>
                 {isLoading ? 'Đang gửi...' : 'Gửi OTP'}

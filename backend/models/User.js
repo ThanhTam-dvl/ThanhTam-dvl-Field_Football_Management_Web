@@ -35,9 +35,12 @@ const User = {
   },
 
   updateInfo: (id, data, callback) => {
-    const sql = `UPDATE users SET name = ?, email = ? WHERE id = ?`;
-    db.query(sql, [data.name, data.email || null, id], callback);
+    const sql = `
+      UPDATE users SET name = ?, email = ?, phone_number = ? WHERE id = ?`;
+    const values = [data.name, data.email, data.phone_number, id];
+    db.query(sql, values, callback);
   },
+
 
   findAll: (callback) => {
     const sql = `SELECT id, phone_number, name, role, total_bookings FROM users WHERE is_active = 1`;
