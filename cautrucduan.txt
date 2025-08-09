@@ -2,11 +2,10 @@ run backend: npm start
 run frontend: npm run dev
 
 football-field-management/
-├── backend/                        # toàn bộ logic phía server (nodejs + express)
+├── backend/                        # Server-side logic (Node.js + Express)
 │   ├── config/
-│   │   └── db.js                   # cấu hình kết nối MySQL
-│
-│   ├── controllers/               # xử lý logic (business logic)
+│   │   └── db.js                   # Database configuration
+│   ├── controllers/                # Business logic
 │   │   ├── authController.js
 │   │   ├── fieldController.js
 │   │   ├── bookingController.js
@@ -16,8 +15,7 @@ football-field-management/
 │   │   ├── userController.js
 │   │   ├── dashboardController.js
 │   │   └── reportController.js
-│
-│   ├── routes/                    # khai báo các endpoint
+│   ├── routes/                     # Endpoints
 │   │   ├── authRoutes.js
 │   │   ├── fieldRoutes.js
 │   │   ├── bookingRoutes.js
@@ -27,8 +25,7 @@ football-field-management/
 │   │   ├── userRoutes.js
 │   │   ├── dashboardRoutes.js
 │   │   └── reportRoutes.js
-│
-│   ├── models/                    # định nghĩa các query SQL / ORM models
+│   ├── models/                     # SQL queries / ORM models
 │   │   ├── Field.js
 │   │   ├── Booking.js
 │   │   ├── Match.js
@@ -36,22 +33,19 @@ football-field-management/
 │   │   ├── Maintenance.js
 │   │   ├── User.js
 │   │   └── OTP.js
-│
 │   ├── middlewares/
-│   │   ├── authMiddleware.js      # xác thực người dùng bằng JWT hoặc OTP(chưa có)
-│   │   ├── errorMiddleware.js     # xử lý lỗi chung(chưa có)
+│   │   ├── authMiddleware.js
+│   │   ├── errorMiddleware.js
 │   │   └── validate.js
-│
 │   ├── utils/
-│   │   ├── sendOtp.js             # gửi mã OTP(chưa có)
-│   │   └── logger.js              # log file(chưa có)
-│
-│   ├── uploads/                   # nếu có ảnh (sân, hóa đơn…)
-│   ├── index.js                   # điểm khởi động server express
+│   │   ├── sendOtp.js
+│   │   └── logger.js
+│   ├── uploads/                    # Uploaded files (e.g., images, invoices)
+│   ├── index.js                    # Express server entry point
 │   ├── package.json
 │   └── .env
 │
-├── frontend/                      # giao diện người dùng (reactjs)
+├── frontend/                       # Client-side logic (React.js)
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
@@ -59,9 +53,9 @@ football-field-management/
 │   │   │   ├── images/
 │   │   │   └── styles/
 │   │   │       ├── common.css
-│   │   │       ├── admin.css
+│   │   │       ├── admin.css      # Admin interface styles
 │   │   │       └── ...
-│   │   ├── components/
+│   │   ├── components/             # UI Components
 │   │   │   ├── Header.js
 │   │   │   ├── Footer.js
 │   │   │   ├── LoginModal.js
@@ -71,14 +65,14 @@ football-field-management/
 │   │   │   ├── FieldStatus.js
 │   │   │   ├── FieldCard.js
 │   │   │   └── BookingForm.js
-│   │   ├── pages/                 # các trang cho người dùng
+│   │   ├── pages/                  # User pages
 │   │   │   ├── Home.js
 │   │   │   ├── Booking.js
 │   │   │   ├── Contact.js
 │   │   │   ├── FindMatch.js
 │   │   │   ├── JoinTeam.js
 │   │   │   └── NotFound.js
-│   │   ├── admin/                 # các trang dành riêng cho quản trị viên
+│   │   ├── admin/                  # Admin pages
 │   │   │   ├── Dashboard.js
 │   │   │   ├── BookingManagement.js
 │   │   │   ├── FieldManagement.js
@@ -87,21 +81,25 @@ football-field-management/
 │   │   │   ├── MaintenanceManagement.js
 │   │   │   ├── FinancialReport.js
 │   │   │   └── TeamManagement.js
-│   │   ├── services/              # gọi API từ backend
+│   │   ├── services/               # API calls to backend
 │   │   │   ├── api.js
 │   │   │   ├── fieldService.js
 │   │   │   ├── bookingService.js
+│   │   │   ├── matchService.js
+│   │   │   ├── matchService.js
+│   │   │   ├── teamService.js
 │   │   │   └── ...
-│   │   ├── context/               # lưu trạng thái người dùng, token
+│   │   ├── context/                # User state management
 │   │   │   └── AuthContext.js
 │   │   ├── App.js
 │   │   ├── index.js
-│   │   └── router.js              # react-router-dom cấu hình đường dẫn
+│   │   └── router.js               # React-router configuration
 │   ├── package.json
 │
-├── database/
+├── database/                       # SQL dump
 │   └── football_field_management.sql
 │
 ├── .gitignore
 ├── README.md
 └── .env
+
