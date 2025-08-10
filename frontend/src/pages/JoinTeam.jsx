@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import JoinTeamCard from '../components/JoinTeamCard';
 import JoinTeamModal from '../components/JoinTeamModal';
 import ContactModal from '../components/ContactModal';
+import LoginModal from '../components/LoginModal';
 import { fetchTeamJoinPosts } from '../services/teamJoinService';
 
 function JoinTeam() {
@@ -157,6 +158,7 @@ function JoinTeam() {
       {showModal && <JoinTeamModal onClose={() => setShowModal(false)} onRefresh={loadPosts} />}
       {contact && <ContactModal data={contact} onClose={() => setContact(null)} />}
       <Footer />
+      <LoginModal />
     </>
   );
 }

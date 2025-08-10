@@ -1,9 +1,7 @@
-// pages/Contact.jsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import LoginModal from '../components/LoginModal';
 import axios from 'axios';
 
 function Contact() {
@@ -15,21 +13,6 @@ function Contact() {
   });
 
   const [status, setStatus] = useState(null);
-
-  useEffect(() => {
-    const mapContainer = document.getElementById('map');
-    if (mapContainer._leaflet_id != null) {
-      mapContainer._leaflet_id = null;
-    }
-
-    const map = L.map('map').setView([10.865252, 106.696365], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    L.marker([10.865252, 106.696365]).addTo(map)
-      .bindPopup('<b>FootballField</b><br>16 TL03, Thạnh Lộc, Q.12, TP.HCM')
-      .openPopup();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +34,7 @@ function Contact() {
   return (
     <>
       <Header />
-      <main className="contact-page">
+      <main className="contact-page" style={{paddingBottom: 0}}>
         <section className="contact-hero">
           <div className="container">
             <h1>Liên hệ với chúng tôi</h1>
@@ -104,11 +87,20 @@ function Contact() {
 
           <div className="map-section">
             <h2>Vị trí của chúng tôi</h2>
-            <div id="map" style={{ height: '400px', borderRadius: '10px' }}></div>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.363581788153!2d106.68094251032075!3d10.859926457603919!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317529fb7fc7aa8b%3A0x2d547093695adcdb!2zTmluYSBIb3VzZSBUaOG6oW5oIEzhu5lj!5e0!3m2!1svi!2s!4v1754792866878!5m2!1svi!2s"
+              width="100%"
+              height="450"
+              style={{ border: 0, borderRadius: '10px' }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
         </section>
       </main>
       <Footer />
+      <LoginModal />
     </>
   );
 }
