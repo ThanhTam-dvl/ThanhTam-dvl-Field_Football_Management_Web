@@ -1,5 +1,4 @@
-// src/components/LoginModal.jsx
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { sendOtp, verifyOtp } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 function LoginModal() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [emailOrPhone, setEmailOrPhone] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1);  // Step 1: Enter email/phone, Step 2: Enter OTP
   const [timer, setTimer] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +17,7 @@ function LoginModal() {
     const closeModal = () => {
       modal.classList.remove('active');
       document.body.style.overflow = '';
-      setEmail('');
+      setEmailOrPhone('');
       setOtp('');
       setStep(1);
       setTimer(60);
@@ -47,11 +46,11 @@ function LoginModal() {
   }, [step, timer]);
 
   const handleSendOtp = async () => {
-    if (!email) return alert('Vui lòng nhập email');
+    if (!emailOrPhone) return alert('Vui lòng nhập email hoặc số điện thoại');
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      await sendOtp(email);
-      setStep(2);
+      await sendOtp(emailOrPhone);
+      setStep(2);  // Move to OTP verification step
     } catch (err) {
       console.error(err);
       alert('Không gửi được OTP');
@@ -61,16 +60,17 @@ function LoginModal() {
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp) return;
+    if (!otp) return alert('Vui lòng nhập mã OTP');
     try {
       setIsLoading(true);
-      const res = await verifyOtp(email, otp);
-      login(res.data.user);
+      const res = await verifyOtp(emailOrPhone, otp);
+      login(res.data.user);  // Save user info in context
 
       const modal = document.getElementById('login-modal');
       document.body.style.overflow = '';
       modal?.classList.remove('active');
 
+      // If user is new, navigate to profile page for completion
       if (!res.data.user.name || res.data.user.name.trim().toLowerCase() === 'người dùng mới') {
         navigate('/profile');
       }
@@ -91,45 +91,38 @@ function LoginModal() {
         </div>
         <div className="login-form">
           {step === 1 && (
-            <div className="phone-input">
-              <label htmlFor="email">Email</label>
+            <div className="input-field">
+              <label>Nhập email hoặc số điện thoại</label>
               <input
-                type="email"
-                id="email"
-                placeholder="Nhập email của bạn"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+                placeholder="Email hoặc số điện thoại"
+                style={{ width: '72%' }}
               />
-              <button id="send-otp" onClick={handleSendOtp} disabled={isLoading}>
-                {isLoading ? 'Đang gửi...' : 'Gửi OTP'}
+              <button onClick={handleSendOtp} disabled={isLoading}>
+                {isLoading ? 'Đang gửi OTP...' : 'Gửi OTP'}
               </button>
             </div>
           )}
 
           {step === 2 && (
-            <>
-              <div className="otp-input">
-                <label htmlFor="otp">Mã OTP</label>
-                <input
-                  type="text"
-                  id="otp"
-                  placeholder="Nhập mã OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                <div className="otp-timer">
-                  Mã OTP sẽ hết hạn sau: <span id="timer">{timer}</span>s
-                </div>
+            <div className="otp-input">
+              <label>Nhập mã OTP</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Mã OTP"
+              />
+              <div className="otp-timer">
+                Mã OTP sẽ hết hạn sau: <span>{timer}</span>s
               </div>
-              <button id="login-submit" onClick={handleVerifyOtp} disabled={!otp || isLoading}>
+              <button onClick={handleVerifyOtp} disabled={!otp || isLoading}>
                 {isLoading ? 'Đang xác minh...' : 'Đăng nhập'}
               </button>
-            </>
+            </div>
           )}
-
-          <div className="admin-link">
-            <a href="/admin/login">Đăng nhập quản trị</a>
-          </div>
         </div>
       </div>
     </div>

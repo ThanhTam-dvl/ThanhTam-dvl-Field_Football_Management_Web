@@ -1,0 +1,629 @@
+/* Dashboard-specific CSS */
+:root {
+    /* Specific variables for dashboard */
+    --bottom-nav-height: 70px;
+}
+
+/* Mobile Page Title */
+.mobile-page-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg) var(--spacing-md) var(--spacing-md);
+}
+
+.mobile-page-title h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.refresh-btn {
+    background: var(--bg-card);
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    padding: var(--spacing-sm);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Current Time */
+.current-time {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin: 0 var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-sm);
+    background-color: var(--bg-card);
+    border-radius: 8px;
+}
+
+/* Dashboard Content */
+.dashboard-content {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+}
+
+/* Stats Section */
+.stats-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-card.revenue .stat-icon {
+    background: linear-gradient(135deg, var(--success-color), #00a085);
+}
+
+.stat-card.bookings .stat-icon {
+    background: linear-gradient(135deg, var(--info-color), #0984e3);
+}
+
+.stat-card.occupancy .stat-icon {
+    background: linear-gradient(135deg, var(--warning-color), #e17055);
+}
+
+.stat-card.pending .stat-icon {
+    background: linear-gradient(135deg, var(--highlight-color), #d63031);
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.stat-change.positive {
+    color: var(--success-color);
+}
+
+.stat-change.negative {
+    color: var(--danger-color);
+}
+
+/* Charts Section */
+.charts-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.chart-card {
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.chart-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chart-filter {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.chart-container {
+    height: 250px;
+    position: relative;
+}
+
+/* Content Section */
+.content-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+.content-card {
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.view-all {
+    color: var(--highlight-color);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.view-all:hover {
+    color: var(--text-primary);
+}
+
+/* Desktop Table */
+.desktop-table {
+    display: none;
+}
+
+/* Mobile List */
+.mobile-list {
+    display: block;
+}
+
+.booking-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.booking-item:last-child {
+    border-bottom: none;
+}
+
+.booking-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.booking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xs);
+}
+
+.customer-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.booking-price {
+    font-weight: 700;
+    color: var(--success-color);
+    font-size: 0.9rem;
+}
+
+.booking-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.booking-detail {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.booking-detail i {
+    color: var(--text-secondary);
+}
+
+.booking-status {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-top: var(--spacing-xs);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.status-badge.confirmed {
+    background-color: rgba(0, 184, 148, 0.2);
+    color: var(--success-color);
+}
+
+.status-badge.pending {
+    background-color: rgba(253, 203, 110, 0.2);
+    color: var(--warning-color);
+}
+
+.status-badge.cancelled {
+    background-color: rgba(225, 112, 85, 0.2);
+    color: var(--danger-color);
+}
+
+/* Popular Fields */
+.popular-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.field-item {
+    padding: var(--spacing-md);
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.field-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.field-info h4 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.field-info span {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.field-stats {
+    text-align: right;
+}
+
+.field-bookings {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--highlight-color);
+}
+
+.field-percentage {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Quick Actions */
+.quick-actions-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.section-header {
+    margin-bottom: var(--spacing-md);
+}
+
+.section-header h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.action-btn {
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+    border: none;
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow);
+    color: var(--text-primary);
+    min-height: 80px;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.action-btn i {
+    font-size: 1.3rem;
+    color: var(--highlight-color);
+}
+
+.action-btn span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--bottom-nav-height);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    border-top: 1px solid var(--border-color);
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: var(--spacing-xs);
+    border-radius: 8px;
+    transition: all 0.2s;
+    min-width: 60px;
+}
+
+.bottom-nav-item:hover {
+    background-color: var(--bg-hover);
+}
+
+.bottom-nav-item.active {
+    color: var(--highlight-color);
+}
+
+.bottom-nav-item i {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.bottom-nav-item span {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+/* Animations */
+.booking-item,
+.field-item {
+    animation: slideInUp 0.3s ease-out;
+}
+
+/* TABLET STYLES */
+@media (min-width: 768px) {
+    .charts-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+    
+    .content-grid {
+        grid-template-columns: 2fr 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .actions-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .chart-container {
+        height: 300px;
+    }
+    
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+    
+    .stat-value {
+        font-size: 1.4rem;
+    }
+}
+
+/* DESKTOP STYLES */
+@media (min-width: 1024px) {
+    /* Dashboard Content */
+    .dashboard-content {
+        padding: var(--spacing-2xl);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Desktop Table */
+    .desktop-table {
+        display: block;
+    }
+    
+    .mobile-list {
+        display: none;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background-color: var(--bg-primary);
+        color: var(--text-secondary);
+        padding: var(--spacing-md);
+        text-align: left;
+        font-weight: 500;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .data-table td {
+        padding: var(--spacing-md);
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+    }
+    
+    .data-table tbody tr:hover {
+        background-color: var(--bg-hover);
+    }
+    
+    /* Larger Stats */
+    .stat-card {
+        padding: var(--spacing-xl);
+        gap: var(--spacing-lg);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+    }
+    
+    .stat-change {
+        font-size: 0.8rem;
+    }
+    
+    /* Chart adjustments */
+    .chart-container {
+        height: 350px;
+    }
+    
+    .chart-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    /* Actions Grid */
+    .actions-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    
+    .action-btn {
+        padding: var(--spacing-lg);
+        min-height: 100px;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-5px);
+    }
+}
+
+/* LARGE DESKTOP */
+@media (min-width: 1440px) {
+    .dashboard-content {
+        padding: var(--spacing-2xl) 4rem;
+    }
+    
+    .stats-grid {
+        gap: var(--spacing-lg);
+    }
+    
+    .charts-grid,
+    .content-grid {
+        gap: var(--spacing-lg);
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .stat-card,
+    .chart-card,
+    .content-card {
+        border: 2px solid var(--border-light);
+    }
+}
