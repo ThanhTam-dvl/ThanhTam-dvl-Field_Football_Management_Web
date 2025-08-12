@@ -1,0 +1,155 @@
+📋 TÓM TẮT DỰ ÁN WEBSITE QUẢN LÝ SÂN BÓNG
+🎯 MỤC TIÊU DỰ ÁN
+Website đặt sân bóng và quản lý sân bóng với 2 phía:
+
+Khách hàng: Đặt sân, tìm kèo, ghép đội
+Admin: Quản lý sân, duyệt booking, thống kê doanh thu
+
+🛠 CÔNG NGHỆ
+
+Backend: Node.js + Express + MySQL
+Frontend: React + Vite + CSS vanilla
+Auth: OTP qua email/SMS (không JWT)
+Libraries: axios, react-router-dom, nodemailer, fontawesome
+
+🗄️ DATABASE SCHEMA (MySQL)
+Database: football_field_management
+9 bảng chính:
+
+users - Người dùng (customer/admin), phone_number unique, OTP auth
+fields - Sân bóng (5vs5/7vs7/11vs11), price_per_hour, facilities JSON
+bookings - Đặt sân, có start_time/end_time, status (pending/approved/cancelled/completed)
+booking_services - Dịch vụ kèm theo booking
+services - Kho đồ uống/thức ăn/thiết bị, có stock
+maintenance_schedules - Lịch bảo trì sân
+matches - Kèo bóng đá, có allow_join cho ghép đội
+match_participants - Người tham gia kèo
+team_join_posts - Đăng tin ghép đội
+otp_codes - Mã OTP có thời gian hết hạn
+pricing_rules - Giá theo khung giờ và loại sân
+
+🔧 BACKEND STRUCTURE (Node.js + Express)
+📁 /backend
+
+index.js - Entry point, setup CORS, routes mounting
+package.json - Dependencies: express, mysql2, cors, dotenv, nodemailer
+.env - DB config, email config, JWT secret
+
+📁 /config
+
+db.js - MySQL connection setup
+
+📁 /controllers (Business logic)
+
+authController.js - OTP gửi qua email/SMS, verify OTP, tự động tạo user
+bookingController.js - Tạo booking với logic tính giá phức tạp, lấy booking theo user
+fieldController.js - Lấy tất cả sân, tìm sân trống theo thời gian
+matchController.js - CRUD kèo, tham gia kèo, lấy participants
+serviceController.js - Lấy dịch vụ, filter theo category
+maintenanceController.js - CRUD lịch bảo trì
+userController.js - CRUD user, update profile
+teamJoinController.js - CRUD tin ghép đội
+contactController.js - Gửi email liên hệ qua nodemailer
+
+📁 /models (Database queries)
+
+Field.js - Logic phức tạp tìm sân trống, overlap checking
+Booking.js - Insert/get bookings
+Match.js - CRUD matches với filtering
+MatchParticipant.js - Join/leave matches
+Service.js - Get services by category
+Maintenance.js - CRUD maintenance schedules
+User.js - CRUD users, createIfNotExist logic
+TeamJoin.js - CRUD team join posts với filtering
+Otp.js - OTP verification logic
+
+📁 /routes (API endpoints)
+
+authRoutes.js - POST /send-otp, /verify-otp
+fieldRoutes.js - GET /, /available
+bookingRoutes.js - POST /, GET /date, /user/:userId
+matchRoutes.js - GET /, POST /, POST /join, GET /:id/participants
+serviceRoutes.js - GET /, /:category
+maintenanceRoutes.js - GET /, POST /, GET /field/:fieldId
+userRoutes.js - GET /, /:id, PUT /:id, DELETE /:id
+teamJoinRoutes.js - GET /, POST /
+contactRoutes.js - POST /
+
+⚛️ FRONTEND STRUCTURE (React + Vite)
+📁 /frontend
+
+package.json - React 19, router-dom, axios, fontawesome, leaflet
+index.html - Root HTML
+App.jsx - Router setup với routes chính
+main.jsx - React root render với AuthProvider
+
+📁 /src/pages (Main pages)
+
+Home.jsx - Landing page với hero, field status timeline, features
+Booking.jsx - Search form, field cards, booking modal integration
+FindMatch.jsx - Danh sách kèo, filter, create match modal
+JoinTeam.jsx - Danh sách tin ghép đội, filter, create post modal
+Contact.jsx - Contact form gửi email, thông tin liên hệ, map
+UserProfile.jsx - Update user info, stats, logout
+
+📁 /src/components (Reusable components)
+
+Header.jsx - Navigation, login button, mobile menu, user dropdown
+Footer.jsx - Footer links, contact info, social media
+LoginModal.jsx - 2-step OTP login (phone → OTP), timer countdown
+BookingSearchForm.jsx - Complex search với validation, time logic
+BookingModal.jsx - Booking confirmation với user info, payment method
+FieldCard.jsx - Display field info, available slots, book button
+FieldStatus.jsx - Real-time timeline view các sân (available/booked/maintenance)
+MatchCard.jsx - Display match info, contact, join team
+CreateMatchModal.jsx - Form tạo kèo với validation
+ContactModal.jsx - Show contact info với Zalo/call links
+JoinTeamCard.jsx - Display team post, contact
+JoinTeamModal.jsx - Form đăng tin ghép đội
+Features.jsx - Feature cards cho homepage
+ScrollToTop.jsx - Auto scroll on route change
+
+📁 /src/services (API calls)
+
+api.jsx - Axios instance với base URL
+authService.jsx - sendOtp(), verifyOtp()
+bookingService.jsx - fetchAvailableFields(), createBooking() với complex logic
+matchService.jsx - fetchMatches(), createMatch(), joinMatch()
+teamJoinService.jsx - fetchTeamJoinPosts(), createTeamJoinPost()
+
+📁 /src/context
+
+AuthContext.jsx - User state management, localStorage persistence
+
+📁 /src/assets/styles
+
+styles.css - Toàn bộ CSS (~2000 lines): responsive, animations, modals, forms
+
+🎯 CHỨC NĂNG ĐÃ HOÀN THIỆN
+👤 User Features:
+
+Authentication: OTP login qua phone/email
+Booking System: Tìm sân trống, đặt sân với logic giá phức tạp
+Match Finding: Tạo kèo, tìm kèo, tham gia đội
+Team Join: Đăng tin cần người, tìm đội thiếu người
+Profile Management: Cập nhật thông tin, xem thống kê
+Contact: Gửi email liên hệ với Google Maps
+
+🔧 Technical Features:
+
+Real-time Field Status: Timeline view với overlap checking
+Complex Pricing: Giá theo giờ và loại sân
+Advanced Search: Filter theo nhiều tiêu chí
+Responsive Design: Mobile-first, animations
+Form Validation: Client & server validation
+File Structure: MVC pattern, modular components
+
+❌ CHƯA CÓ: ADMIN SYSTEM
+Cần implement:
+
+Admin authentication
+Dashboard với charts
+CRUD management cho tất cả entities
+Reports & analytics
+Protected admin routes
+Admin-specific CSS
