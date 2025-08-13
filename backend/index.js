@@ -12,6 +12,8 @@ const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const teamJoinRoutes = require('./routes/teamJoinRoutes'); 
 const userRoutes = require('./routes/userRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+//Admin
+const adminRoutes = require('./routes/adminRoutes');
 
 const db = require('./config/db');
 
@@ -29,8 +31,11 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/team-join', teamJoinRoutes); 
 app.use('/api/contact', contactRoutes);
+//Admin Routes
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running at http://localhost:${PORT}`);
+  console.log(`📊 Admin panel will be available at http://localhost:3000/admin`);
 });

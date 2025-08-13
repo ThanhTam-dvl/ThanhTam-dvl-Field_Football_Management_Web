@@ -1,0 +1,640 @@
+/* Field Management CSS - Extends admin.css */
+
+/* Additional variables for field management */
+:root {
+  --field-available: #00b894;
+  --field-booked: #e94560;
+  --field-maintenance: #74b9ff;
+  --field-pending: #fdcb6e;
+}
+
+/* Field Management Specific Styles */
+.admin-field-management {
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Date Navigation */
+.admin-date-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--admin-spacing-lg);
+  background-color: var(--admin-bg-card);
+  padding: var(--admin-spacing-lg);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-nav-btn {
+  background: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-primary);
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.1rem;
+}
+
+.admin-nav-btn:hover {
+  background-color: var(--admin-bg-hover);
+  border-color: var(--admin-highlight);
+  transform: translateY(-1px);
+}
+
+.admin-current-date {
+  text-align: center;
+  flex: 1;
+}
+
+.admin-current-date h2 {
+  font-size: 1.3rem;
+  color: var(--admin-text-primary);
+  margin: 0 0 var(--admin-spacing-xs) 0;
+  font-weight: 600;
+}
+
+.admin-today-btn {
+  background: linear-gradient(135deg, var(--admin-highlight), #d63031);
+  border: none;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-today-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+}
+
+/* View Controls */
+.admin-view-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-md);
+  margin-bottom: var(--admin-spacing-lg);
+  background-color: var(--admin-bg-card);
+  padding: var(--admin-spacing-lg);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-view-modes {
+  display: flex;
+  gap: var(--admin-spacing-sm);
+}
+
+.admin-view-mode-btn {
+  background: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.admin-view-mode-btn:hover {
+  background-color: var(--admin-bg-hover);
+  color: var(--admin-text-primary);
+  border-color: var(--admin-highlight);
+}
+
+.admin-view-mode-btn.active {
+  background: linear-gradient(135deg, var(--admin-highlight), #d63031);
+  border-color: var(--admin-highlight);
+  color: white;
+}
+
+.admin-filters {
+  display: flex;
+  gap: var(--admin-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.admin-filter-select {
+  background-color: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-primary);
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 140px;
+  transition: all 0.2s ease;
+}
+
+.admin-filter-select:focus {
+  outline: none;
+  border-color: var(--admin-highlight);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+/* Timeline View */
+.admin-timeline-view {
+  background-color: var(--admin-bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--admin-shadow);
+  margin-bottom: var(--admin-spacing-xl);
+  position: relative;
+}
+
+.admin-timeline-header {
+  display: flex;
+  background: linear-gradient(135deg, var(--admin-bg-primary), var(--admin-bg-secondary));
+  border-bottom: 2px solid var(--admin-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.admin-field-column {
+  width: 120px;
+  min-width: 120px;
+  padding: var(--admin-spacing-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--admin-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--admin-border);
+  background: linear-gradient(135deg, var(--admin-bg-secondary), var(--admin-bg-card));
+  position: sticky;
+  left: 0;
+  z-index: 150;
+}
+
+.admin-time-columns {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-highlight) transparent;
+}
+
+.admin-time-columns::-webkit-scrollbar {
+  height: 6px;
+}
+
+.admin-time-columns::-webkit-scrollbar-track {
+  background: var(--admin-bg-primary);
+  border-radius: 3px;
+}
+
+.admin-time-columns::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--admin-highlight), #d63031);
+  border-radius: 3px;
+}
+
+.admin-time-column {
+  min-width: 90px;
+  width: 90px;
+  padding: var(--admin-spacing-md) var(--admin-spacing-sm);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary);
+  border-right: 1px solid var(--admin-border-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, transparent, rgba(233, 69, 96, 0.05));
+}
+
+.admin-timeline-body {
+  max-height: 70vh;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--admin-highlight) transparent;
+  position: relative;
+}
+
+.admin-timeline-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-timeline-body::-webkit-scrollbar-track {
+  background: var(--admin-bg-primary);
+  border-radius: 3px;
+}
+
+.admin-timeline-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--admin-highlight), #d63031);
+  border-radius: 3px;
+}
+
+.admin-field-row {
+  display: flex;
+  border-bottom: 1px solid var(--admin-border);
+  min-height: 70px;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.admin-field-row:hover {
+  background-color: rgba(233, 69, 96, 0.02);
+}
+
+.admin-field-info {
+  width: 120px;
+  min-width: 120px;
+  padding: var(--admin-spacing-md);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--admin-bg-secondary), var(--admin-bg-card));
+  border-right: 1px solid var(--admin-border);
+  position: sticky;
+  left: 0;
+  z-index: 50;
+}
+
+.admin-field-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--admin-text-primary);
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.admin-field-type {
+  font-size: 0.8rem;
+  color: var(--admin-text-muted);
+  text-align: center;
+  padding: 2px 8px;
+  background-color: rgba(233, 69, 96, 0.1);
+  border-radius: 12px;
+}
+
+.admin-field-timeline {
+  display: flex;
+  min-height: 70px;
+  position: relative;
+}
+
+.admin-time-slot {
+  min-width: 90px;
+  width: 90px;
+  border-right: 1px solid var(--admin-border-light);
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.admin-time-slot:hover {
+  background-color: rgba(233, 69, 96, 0.05);
+}
+
+.admin-time-slot.available {
+  background: linear-gradient(180deg, rgba(0, 184, 148, 0.1), rgba(0, 184, 148, 0.05));
+}
+
+/* Booking Blocks */
+.admin-booking-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 2px;
+  right: 2px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.admin-booking-block:hover {
+  transform: scale(1.02);
+  z-index: 20;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.admin-booking-block.booked {
+  background: linear-gradient(135deg, var(--field-booked), #d63031);
+  color: white;
+}
+
+.admin-booking-block.approved {
+  background: linear-gradient(135deg, var(--field-available), #00a085);
+  color: white;
+}
+
+.admin-booking-block.pending {
+  background: linear-gradient(135deg, var(--field-pending), #e17055);
+  color: #2d3748;
+}
+
+.admin-booking-block.maintenance {
+  background: linear-gradient(135deg, var(--field-maintenance), #0984e3);
+  color: white;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(255,255,255,0.2) 6px,
+    rgba(255,255,255,0.2) 12px
+  );
+}
+
+.admin-booking-block.multi-hour {
+  right: calc(-88px * var(--duration, 1));
+  z-index: 15;
+}
+
+.admin-booking-customer {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+}
+
+.admin-booking-phone {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* List View */
+.admin-list-view {
+  margin-bottom: var(--admin-spacing-xl);
+}
+
+.admin-bookings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--admin-spacing-md);
+}
+
+.admin-booking-card {
+  background: linear-gradient(135deg, var(--admin-bg-card), var(--admin-bg-secondary));
+  border-radius: 12px;
+  padding: var(--admin-spacing-lg);
+  box-shadow: var(--admin-shadow);
+  border-left: 4px solid var(--admin-highlight);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-booking-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--admin-highlight), #d63031);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.admin-booking-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--admin-shadow-lg);
+}
+
+.admin-booking-card:hover::before {
+  opacity: 1;
+}
+
+.admin-booking-card.available {
+  border-left-color: var(--field-available);
+}
+
+.admin-booking-card.booked {
+  border-left-color: var(--field-booked);
+}
+
+.admin-booking-card.approved {
+  border-left-color: var(--field-available);
+}
+
+.admin-booking-card.pending {
+  border-left-color: var(--field-pending);
+}
+
+.admin-booking-card.maintenance {
+  border-left-color: var(--field-maintenance);
+}
+
+.admin-booking-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--admin-spacing-md);
+}
+
+.admin-booking-card-title {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  font-size: 1.05rem;
+}
+
+.admin-booking-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--admin-spacing-xs);
+}
+
+.admin-booking-detail {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+}
+
+.admin-booking-detail i {
+  color: var(--admin-highlight);
+  width: 18px;
+  font-size: 0.9rem;
+}
+
+/* Legend */
+.admin-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-spacing-lg);
+  justify-content: center;
+  padding: var(--admin-spacing-lg);
+  background: linear-gradient(135deg, var(--admin-bg-card), var(--admin-bg-secondary));
+  border-radius: 12px;
+  margin-bottom: var(--admin-spacing-xl);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-sm);
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+  font-weight: 500;
+}
+
+.admin-legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-legend-color.available {
+  background: linear-gradient(135deg, var(--field-available), #00a085);
+}
+
+.admin-legend-color.booked {
+  background: linear-gradient(135deg, var(--field-booked), #d63031);
+}
+
+.admin-legend-color.pending {
+  background: linear-gradient(135deg, var(--field-pending), #e17055);
+}
+
+.admin-legend-color.maintenance {
+  background: linear-gradient(135deg, var(--field-maintenance), #0984e3);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(255,255,255,0.3) 3px,
+    rgba(255,255,255,0.3) 6px
+  );
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .admin-view-controls {
+    flex-direction: column;
+    gap: var(--admin-spacing-sm);
+  }
+
+  .admin-bookings-list {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-time-column,
+  .admin-time-slot {
+    min-width: 70px;
+    width: 70px;
+  }
+
+  .admin-field-column,
+  .admin-field-info {
+    width: 100px;
+    min-width: 100px;
+  }
+
+  .admin-booking-block.multi-hour {
+    right: calc(-68px * var(--duration, 1));
+  }
+
+  .admin-date-navigation {
+    flex-direction: column;
+    gap: var(--admin-spacing-md);
+  }
+
+  .admin-filters {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-view-controls {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .admin-bookings-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-bookings-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-time-column,
+  .admin-time-slot {
+    min-width: 100px;
+    width: 100px;
+  }
+
+  .admin-field-column,
+  .admin-field-info {
+    width: 140px;
+    min-width: 140px;
+  }
+
+  .admin-booking-block.multi-hour {
+    right: calc(-98px * var(--duration, 1));
+  }
+}
+
+/* Add Modal Styles for Field Management */
+.admin-field-modal .admin-form-section {
+  margin-bottom: var(--admin-spacing-lg);
+}
+
+.admin-field-modal .admin-form-row {
+  display: flex;
+  gap: var(--admin-spacing-md);
+  margin-bottom: var(--admin-spacing-md);
+}
+
+.admin-field-modal .admin-form-group {
+  flex: 1;
+}
+
+.admin-field-modal .admin-time-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--admin-spacing-md);
+}
+
+@media (max-width: 768px) {
+  .admin-field-modal .admin-form-row {
+    flex-direction: column;
+  }
+
+  .admin-field-modal .admin-time-inputs {
+    grid-template-columns: 1fr;
+  }
+}
