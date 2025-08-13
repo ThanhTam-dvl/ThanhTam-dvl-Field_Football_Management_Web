@@ -1,10 +1,8 @@
-📋 TÓM TẮT DỰ ÁN WEBSITE QUẢN LÝ SÂN BÓNG
+📋 TÓM TẮT DỰ ÁN WEBSITE QUẢN LÝ SÂN BÓNG (CẬP NHẬT)
 🎯 MỤC TIÊU DỰ ÁN
 Website đặt sân bóng và quản lý sân bóng với 2 phía:
-
 Khách hàng: Đặt sân, tìm kèo, ghép đội
 Admin: Quản lý sân, duyệt booking, thống kê doanh thu
-
 🛠 CÔNG NGHỆ
 
 Backend: Node.js + Express + MySQL
@@ -30,20 +28,16 @@ team_join_posts - Đăng tin ghép đội
 otp_codes - Mã OTP có thời gian hết hạn
 
 🔧 BACKEND STRUCTURE (Node.js + Express)
-📁 /backend
-
-index.js - Entry point, setup CORS, routes mounting
-package.json - Dependencies: express, mysql2, cors, dotenv, nodemailer
-
-📁 /config
+📁 Backend Structure
+/config
 
 db.js - MySQL connection setup
 
-📁 /controllers (Business logic)
+/controllers (Business logic)
 
 authController.js - OTP gửi qua email/SMS, verify OTP, tự động tạo user
 adminAuthController.js - Admin login, session management, change password
-adminController.js - Dashboard stats, booking management, user management, field management, revenue reports
+adminController.js - [HOÀN THÀNH] Dashboard stats, booking management, user management, field management, revenue reports
 bookingController.js - Tạo booking với logic tính giá phức tạp, lấy booking theo user
 fieldController.js - Lấy tất cả sân, tìm sân trống theo thời gian
 matchController.js - CRUD kèo, tham gia kèo, lấy participants
@@ -53,7 +47,7 @@ userController.js - CRUD user, update profile
 teamJoinController.js - CRUD tin ghép đội
 contactController.js - Gửi email liên hệ qua nodemailer
 
-📁 /models (Database queries)
+/models (Database queries)
 
 Admin.js - Admin CRUD, session management, dashboard statistics
 Field.js - Logic phức tạp tìm sân trống, overlap checking
@@ -66,14 +60,14 @@ User.js - CRUD users, createIfNotExist logic
 TeamJoin.js - CRUD team join posts với filtering
 Otp.js - OTP verification logic
 
-📁 /middleware
+/middleware
 
 adminAuth.js - Admin authentication, permission checking, super admin verification
 
-📁 /routes (API endpoints)
+/routes (API endpoints)
 
 authRoutes.js - POST /send-otp, /verify-otp
-adminRoutes.js - Complete admin API: auth, dashboard, bookings, users, fields, revenue
+adminRoutes.js - [HOÀN THÀNH] Complete admin API: auth, dashboard, bookings, users, fields, revenue
 fieldRoutes.js - GET /, /available
 bookingRoutes.js - POST /, GET /date, /user/:userId
 matchRoutes.js - GET /, POST /, POST /join, GET /:id/participants
@@ -84,14 +78,8 @@ teamJoinRoutes.js - GET /, POST /
 contactRoutes.js - POST /
 
 ⚛️ FRONTEND STRUCTURE (React + Vite)
-📁 /frontend
-
-package.json - React 19, router-dom, axios, fontawesome, leaflet
-index.html - Root HTML
-App.jsx - Router setup với routes cho customer và admin
-main.jsx - React root render với AuthProvider và AdminProvider
-
-📁 /src/pages (Customer pages)
+📁 Frontend Structure
+Customer Pages (HOÀN THÀNH)
 
 Home.jsx - Landing page với hero, field status timeline, features
 Booking.jsx - Search form, field cards, booking modal integration
@@ -100,27 +88,24 @@ JoinTeam.jsx - Danh sách tin ghép đội, filter, create post modal
 Contact.jsx - Contact form gửi email, thông tin liên hệ, map
 UserProfile.jsx - Update user info, stats, logout
 
-📁 /src/admin/pages (Admin pages)
+Admin Pages (HOÀN THÀNH)
 
-AdminDashboard.jsx - Dashboard với stats cards, recent bookings, quick actions
-AdminFieldManagement.jsx - Quản lý sân với timeline view, manual booking, delete booking
+AdminDashboard.jsx - [HOÀN THÀNH] Dashboard với stats cards, recent bookings, quick actions
+AdminFieldManagement.jsx - [HOÀN THÀNH] Quản lý sân với timeline view, manual booking, delete booking
+AdminBookingManagement.jsx - [MỚI HOÀN THÀNH] Quản lý đặt sân với filters, bulk actions, CRUD operations#
+AdminCustomerManagement.jsx [MỚI HOÀN THÀNH]
 
-📁 /src/admin/components (Admin components)
+Admin Components (HOÀN THÀNH)
 
-AdminLayout.jsx - Layout với sidebar, mobile nav, breadcrumb
-AdminLogin.jsx - Admin login form với demo accounts
-ProtectedAdminRoute.jsx - Route protection với permission checking
+AdminLayout.jsx - [HOÀN THÀNH] Layout với sidebar, mobile nav, breadcrumb
+AdminLogin.jsx - [HOÀN THÀNH] Admin login form với demo accounts
+ProtectedAdminRoute.jsx - [HOÀN THÀNH] Route protection với permission checking
+BookingFilters.jsx - [MỚI] Filters cho tìm kiếm và lọc booking
+BookingTable.jsx - [MỚI] Table responsive với desktop/mobile views
+BookingModal.jsx - [MỚI] Modal tạo/edit booking với validation
+ConfirmModal.jsx - [MỚI] Modal xác nhận cho các hành động nguy hiểm
 
-📁 /src/admin/context
-
-AdminContext.jsx - Admin state management, session verification
-
-📁 /src/admin/services
-
-adminService.jsx - Dashboard, bookings, users, fields, revenue APIs
-fieldService.jsx - Field management, manual booking, booking status APIs
-
-📁 /src/components (Customer components)
+Customer Components (HOÀN THÀNH)
 
 Header.jsx - Navigation, login button, mobile menu, user dropdown
 Footer.jsx - Footer links, contact info, social media
@@ -137,25 +122,23 @@ JoinTeamModal.jsx - Form đăng tin ghép đội
 Features.jsx - Feature cards cho homepage
 ScrollToTop.jsx - Auto scroll on route change
 
-📁 /src/services (Customer API calls)
+Context & Services (HOÀN THÀNH)
 
-api.jsx - Axios instance với base URL
+AuthContext.jsx - Customer state management, localStorage persistence
+AdminContext.jsx - [HOÀN THÀNH] Admin state management, session verification
+adminService.jsx - [HOÀN THÀNH CẬP NHẬT] Dashboard, bookings, users, fields, revenue APIs với full CRUD
 authService.jsx - sendOtp(), verifyOtp()
 bookingService.jsx - fetchAvailableFields(), createBooking() với complex logic
 matchService.jsx - fetchMatches(), createMatch(), joinMatch()
 teamJoinService.jsx - fetchTeamJoinPosts(), createTeamJoinPost()
 
-📁 /src/context
-
-AuthContext.jsx - Customer state management, localStorage persistence
-
-📁 /src/assets/styles
+Styles (HOÀN THÀNH)
 
 styles.css - Customer CSS (~2000 lines): responsive, animations, modals, forms
-admin.css - Admin CSS (~3000 lines): dark theme, layouts, components
+admin.css - [HOÀN THÀNH] Admin CSS (~3000 lines): dark theme, layouts, components
+admin-booking.css - [MỚI] Booking management specific styles: filters, table, modals
 field-management.css - Field management specific styles: timeline, modals
 common.css - Shared styles cho customer và maintenance
-dashboard-only.css - Dashboard specific styles
 
 🎯 CHỨC NĂNG ĐÃ HOÀN THIỆN
 👤 User Features:
@@ -176,12 +159,3 @@ Responsive Design: Mobile-first, animations
 Form Validation: Client & server validation
 File Structure: MVC pattern, modular components
 
-❌ CHƯA CÓ: ADMIN SYSTEM
-Cần implement:
-
-Admin authentication
-Dashboard với charts
-CRUD management cho tất cả entities
-Reports & analytics
-Protected admin routes
-Admin-specific CSS

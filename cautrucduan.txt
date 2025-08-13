@@ -1,105 +1,125 @@
-run backend: npm start
-run frontend: npm run dev
-
 football-field-management/
-├── backend/                        # Server-side logic (Node.js + Express)
+├── backend/                           # Server-side logic (Node.js + Express)
 │   ├── config/
-│   │   └── db.js                   # Database configuration
-│   ├── controllers/                # Business logic
+│   │   └── db.js
+│   ├── controllers/
 │   │   ├── authController.js
-│   │   ├── fieldController.js
+│   │   ├── adminAuthController.js
+│   │   ├── adminController.js
 │   │   ├── bookingController.js
+│   │   ├── fieldController.js
 │   │   ├── matchController.js
 │   │   ├── serviceController.js
 │   │   ├── maintenanceController.js
 │   │   ├── userController.js
-│   │   ├── dashboardController.js
-│   │   └── reportController.js
-│   ├── routes/                     # Endpoints
+│   │   ├── teamJoinController.js
+│   │   └── contactController.js
+│   ├── models/
+│   │   ├── Admin.js
+│   │   ├── Field.js
+│   │   ├── Booking.js
+│   │   ├── Match.js
+│   │   ├── MatchParticipant.js
+│   │   ├── Service.js
+│   │   ├── Maintenance.js
+│   │   ├── User.js
+│   │   ├── TeamJoin.js
+│   │   └── Otp.js
+│   ├── middlewares/
+│   │   ├── adminAuth.js
+│   │   ├── authMiddleware.js
+│   │   ├── errorMiddleware.js
+│   │   └── validate.js
+│   ├── routes/
 │   │   ├── authRoutes.js
+│   │   ├── adminRoutes.js
 │   │   ├── fieldRoutes.js
 │   │   ├── bookingRoutes.js
 │   │   ├── matchRoutes.js
 │   │   ├── serviceRoutes.js
 │   │   ├── maintenanceRoutes.js
 │   │   ├── userRoutes.js
-│   │   ├── dashboardRoutes.js
-│   │   └── reportRoutes.js
-│   ├── models/                     # SQL queries / ORM models
-│   │   ├── Field.js
-│   │   ├── Booking.js
-│   │   ├── Match.js
-│   │   ├── Service.js
-│   │   ├── Maintenance.js
-│   │   ├── User.js
-│   │   └── OTP.js
-│   ├── middlewares/
-│   │   ├── authMiddleware.js
-│   │   ├── errorMiddleware.js
-│   │   └── validate.js
+│   │   ├── teamJoinRoutes.js
+│   │   └── contactRoutes.js
 │   ├── utils/
 │   │   ├── sendOtp.js
 │   │   └── logger.js
-│   ├── uploads/                    # Uploaded files (e.g., images, invoices)
-│   ├── index.js                    # Express server entry point
+│   ├── uploads/
+│   ├── index.js
 │   ├── package.json
 │   └── .env
 │
-├── frontend/                       # Client-side logic (React.js)
+├── frontend/                          # Client-side logic (React + Vite)
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
-│   │   ├── assets/
+│   │   ├── admin/                     # Toàn bộ admin UI
+│   │   │   ├── assets/styles/
+│   │   │   │   ├── admin-booking.css
+│   │   │   │   ├── admin.css
+│   │   │   │   ├── common.css
+│   │   │   │   ├── dashboard-only.css
+│   │   │   │   └── field-management.css
+│   │   │   ├── components/
+│   │   │   │   ├── AdminLayout.jsx
+│   │   │   │   ├── AdminLogin.jsx
+│   │   │   │   ├── BookingFilters.jsx
+│   │   │   │   ├── BookingModal.jsx
+│   │   │   │   ├── BookingTable.jsx
+│   │   │   │   ├── ConfirmModal.jsx
+│   │   │   │   └── ProtectedAdminRoute.jsx
+│   │   │   ├── context/
+│   │   │   │   └── AdminContext.jsx
+│   │   │   ├── pages/
+│   │   │   │   ├── AdminBookingManagement.jsx
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   └── AdminFieldManagement.jsx
+│   │   │   │   └── AdminCustomerManagement.jsx
+│   │   │   └── services/
+│   │   │       ├── adminService.jsx
+│   │   │       └── fieldService.jsx
+│   │   ├── assets/                    # Customer assets
 │   │   │   ├── images/
 │   │   │   └── styles/
-│   │   │       ├── common.css
-│   │   │       ├── admin.css      # Admin interface styles
-│   │   │       └── ...
-│   │   ├── components/             # UI Components
-│   │   │   ├── Header.js
-│   │   │   ├── Footer.js
-│   │   │   ├── LoginModal.js
-│   │   │   ├── BookingModal.js
-│   │   │   ├── BookingSearchForm.js
-│   │   │   ├── Features.js
-│   │   │   ├── FieldStatus.js
-│   │   │   ├── FieldCard.js
-│   │   │   └── BookingForm.js
-│   │   ├── pages/                  # User pages
-│   │   │   ├── Home.js
-│   │   │   ├── Booking.js
-│   │   │   ├── Contact.js
-│   │   │   ├── FindMatch.js
-│   │   │   ├── JoinTeam.js
-│   │   │   └── NotFound.js
-│   │   ├── admin/                  # Admin pages
-│   │   │   ├── Dashboard.js
-│   │   │   ├── BookingManagement.js
-│   │   │   ├── FieldManagement.js
-│   │   │   ├── CustomerManagement.js
-│   │   │   ├── InventoryManagement.js
-│   │   │   ├── MaintenanceManagement.js
-│   │   │   ├── FinancialReport.js
-│   │   │   └── TeamManagement.js
-│   │   ├── services/               # API calls to backend
-│   │   │   ├── api.js
-│   │   │   ├── fieldService.js
-│   │   │   ├── bookingService.js
-│   │   │   ├── matchService.js
-│   │   │   ├── matchService.js
-│   │   │   ├── teamService.js
-│   │   │   └── ...
-│   │   ├── context/                # User state management
-│   │   │   └── AuthContext.js
-│   │   ├── App.js
-│   │   ├── index.js
-│   │   └── router.js               # React-router configuration
+│   │   │       ├── styles.css
+│   │   │       └── common.css
+│   │   ├── components/                # Customer components
+│   │   │   ├── Header.jsx
+│   │   │   ├── Footer.jsx
+│   │   │   ├── LoginModal.jsx
+│   │   │   ├── BookingSearchForm.jsx
+│   │   │   ├── BookingModal.jsx
+│   │   │   ├── FieldCard.jsx
+│   │   │   ├── FieldStatus.jsx
+│   │   │   ├── MatchCard.jsx
+│   │   │   ├── CreateMatchModal.jsx
+│   │   │   ├── ContactModal.jsx
+│   │   │   ├── JoinTeamCard.jsx
+│   │   │   ├── JoinTeamModal.jsx
+│   │   │   ├── Features.jsx
+│   │   │   └── ScrollToTop.jsx
+│   │   ├── pages/                     # Customer pages
+│   │   │   ├── Home.jsx
+│   │   │   ├── Booking.jsx
+│   │   │   ├── FindMatch.jsx
+│   │   │   ├── JoinTeam.jsx
+│   │   │   ├── Contact.jsx
+│   │   │   └── UserProfile.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── services/
+│   │   │   ├── authService.jsx
+│   │   │   ├── bookingService.jsx
+│   │   │   ├── matchService.jsx
+│   │   │   └── teamJoinService.jsx
+│   │   ├── App.jsx
+│   │   ├── index.jsx
+│   │   └── router.js
 │   ├── package.json
 │
-├── database/                       # SQL dump
+├── database/
 │   └── football_field_management.sql
 │
 ├── .gitignore
 ├── README.md
 └── .env
-

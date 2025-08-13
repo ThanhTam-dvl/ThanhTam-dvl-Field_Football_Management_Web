@@ -1,6 +1,6 @@
 // frontend/src/admin/pages/AdminDashboard.jsx
 import { useState, useEffect } from 'react';
-import { getDashboardStats, getRecentBookings } from '../services/adminService';
+import { getDashboardStats, getRecentBookings } from '../services/dashboardService';
 import '../assets/styles/admin.css';
 
 const AdminDashboard = () => {

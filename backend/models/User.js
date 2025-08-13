@@ -68,8 +68,50 @@ const User = {
         });
       });
     });
+  },
+
+  
+  // backend/models/User.js - Bổ sung methods
+
+// Thêm vào cuối file User.js trước module.exports:
+
+  // Tìm khách hàng với thống kê booking
+  findByIdWithStats: async (id, callback) => {
+    const sql = `
+      SELECT 
+        u.*,
+        COALESCE(booking_stats.completed_bookings, 0) as completed_bookings,
+        COALESCE(booking_stats.total_spent, 0) as total_spent,
+        booking_stats.last_booking_date
+      FROM users u
+      LEFT JOIN (
+        SELECT 
+          user_id,
+          SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_bookings,
+          SUM(CASE WHEN status = 'completed' THEN total_amount ELSE 0 END) as total_spent,
+          MAX(CASE WHEN status = 'completed' THEN booking_date ELSE NULL END) as last_booking_date
+        FROM bookings 
+        WHERE user_id = ?
+        GROUP BY user_id
+      ) booking_stats ON u.id = booking_stats.user_id
+      WHERE u.id = ?
+    `;
+    db.query(sql, [id, id], callback);
+  },
+
+  // Cập nhật trạng thái active
+  updateStatus: (id, isActive, callback) => {
+    const sql = `UPDATE users SET is_active = ?, updated_at = NOW() WHERE id = ?`;
+    db.query(sql, [isActive, id], callback);
+  },
+
+  // Kiểm tra tồn tại của phone (trừ user hiện tại)
+  checkPhoneDuplicate: (phone, excludeId, callback) => {
+    const sql = `SELECT id FROM users WHERE phone_number = ? AND id != ?`;
+    db.query(sql, [phone, excludeId], callback);
   }
 };
+
 
 
 

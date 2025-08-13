@@ -16,6 +16,8 @@ import AdminLayout from './admin/components/AdminLayout';
 import AdminDashboard from './admin/pages/AdminDashboard';
 import AdminFieldManagement from './admin/pages/AdminFieldManagement';
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute';
+import AdminBookingManagement from './admin/pages/AdminBookingManagement';
+import AdminCustomerManagement from './admin/pages/AdminCustomerManagement';
 
 // Shared Components
 import ScrollToTop from './components/ScrollToTop';
@@ -55,21 +57,7 @@ function App() {
               {/* Booking Management - Cần quyền 'bookings' */}
               <Route path="bookings" element={
                 <ProtectedAdminRoute permission="bookings">
-                  <div style={{ 
-                    padding: '20px', 
-                    color: 'white', 
-                    textAlign: 'center',
-                    background: 'var(--admin-bg-card)',
-                    borderRadius: '12px',
-                    border: '1px solid var(--admin-border)'
-                  }}>
-                    <i className="fas fa-clipboard-list" style={{ fontSize: '3rem', marginBottom: '16px', color: '#74b9ff' }}></i>
-                    <h2>Quản lý Đặt sân</h2>
-                    <p style={{ color: '#b2b2b2', marginTop: '8px' }}>Trang này đang trong quá trình phát triển...</p>
-                    <p style={{ fontSize: '0.9rem', color: '#888888', marginTop: '16px' }}>
-                      Sẽ bao gồm: Danh sách đặt sân, Duyệt/Từ chối, Quản lý thanh toán
-                    </p>
-                  </div>
+                  <AdminBookingManagement />
                 </ProtectedAdminRoute>
               } />
               
@@ -83,21 +71,7 @@ function App() {
               {/* User Management - Cần quyền 'users' */}
               <Route path="users" element={
                 <ProtectedAdminRoute permission="users">
-                  <div style={{ 
-                    padding: '20px', 
-                    color: 'white', 
-                    textAlign: 'center',
-                    background: 'var(--admin-bg-card)',
-                    borderRadius: '12px',
-                    border: '1px solid var(--admin-border)'
-                  }}>
-                    <i className="fas fa-users" style={{ fontSize: '3rem', marginBottom: '16px', color: '#a29bfe' }}></i>
-                    <h2>Quản lý Khách hàng</h2>
-                    <p style={{ color: '#b2b2b2', marginTop: '8px' }}>Trang này đang trong quá trình phát triển...</p>
-                    <p style={{ fontSize: '0.9rem', color: '#888888', marginTop: '16px' }}>
-                      Sẽ bao gồm: Danh sách khách hàng, Thông tin chi tiết, Lịch sử đặt sân
-                    </p>
-                  </div>
+                  <AdminCustomerManagement />
                 </ProtectedAdminRoute>
               } />
               

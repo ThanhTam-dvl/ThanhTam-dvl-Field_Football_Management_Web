@@ -1,39 +1,15 @@
-// backend/routes/adminRoutes.js
+// ====== backend/routes/adminRoutes.js (Updated Main File) ======
 const express = require('express');
 const router = express.Router();
+const adminRoutes = require('./admin');
 const adminAuthController = require('../controllers/adminAuthController');
-const adminController = require('../controllers/adminController');
-const { requireAuth, requirePermission, requireSuperAdmin } = require('../middleware/adminAuth');
+const { requireAuth, requireSuperAdmin } = require('../middleware/adminAuth');
 
-// Auth routes (không cần xác thực)
-router.post('/auth/login', adminAuthController.login);
-router.post('/auth/logout', adminAuthController.logout);
-router.get('/auth/verify', adminAuthController.verifySession);
-router.post('/auth/change-password', requireAuth, adminAuthController.changePassword);
+// Mount all admin sub-routes
+router.use('/', adminRoutes);
 
-// Dashboard routes
-router.get('/dashboard', requireAuth, adminController.getDashboard);
-router.get('/recent-bookings', requireAuth, adminController.getRecentBookings);
-
-// Booking management routes
-router.get('/bookings', requireAuth, requirePermission('bookings'), adminController.getAllBookings);
-router.put('/bookings/:bookingId/status', requireAuth, requirePermission('bookings'), adminController.updateBookingStatus);
-
-// User management routes
-router.get('/users', requireAuth, requirePermission('users'), adminController.getUsers);
-
-// Field management routes
-router.get('/fields', requireAuth, requirePermission('fields'), adminController.getFields);
-router.post('/fields', requireAuth, requirePermission('fields'), adminController.createField);
-router.put('/fields/:fieldId', requireAuth, requirePermission('fields'), adminController.updateField);
-
-// Field management with bookings
-router.get('/fields-with-bookings', requireAuth, requirePermission('fields'), adminController.getFieldsWithBookings);
-router.post('/manual-booking', requireAuth, requirePermission('bookings'), adminController.createManualBooking);
-router.delete('/bookings/:bookingId', requireAuth, requirePermission('bookings'), adminController.deleteBooking);
-
-// Revenue reports
-router.get('/revenue', requireAuth, requirePermission('reports'), adminController.getRevenue);
+// Legacy user management routes (keep for backward compatibility)
+router.get('/users', requireAuth, require('../controllers/admin/customerController').getCustomers);
 
 // Admin management routes (chỉ super admin)
 router.get('/admins', requireAuth, requireSuperAdmin, (req, res) => {

@@ -1,6 +1,7 @@
 // frontend/src/admin/pages/AdminFieldManagement.jsx
 import { useState, useEffect } from 'react';
-import { getFieldsWithBookings, createManualBooking, updateBookingStatus, deleteBooking } from '../services/fieldService';
+import { getFieldsWithBookings } from '../services/fieldService';
+import { createManualBooking, deleteBooking, updateBookingStatus} from '../services/bookingService';
 import '../assets/styles/admin.css';
 import '../assets/styles/field-management.css';
 
