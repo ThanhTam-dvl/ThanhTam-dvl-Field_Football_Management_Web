@@ -1,4 +1,4 @@
-// ====== frontend/src/admin/services/fieldService.js ======
+// ====== frontend/src/admin/services/fieldService.js (UPDATED) ======
 import BaseService from './baseService';
 
 class FieldService extends BaseService {
@@ -20,6 +20,28 @@ class FieldService extends BaseService {
 
   async updateField(fieldId, fieldData) {
     return this.put(`/${fieldId}`, fieldData);
+  }
+
+  async deleteField(fieldId) {
+    return this.delete(`/${fieldId}`);
+  }
+
+  // Field booking operations
+  async getFieldBookings(fieldId, date) {
+    return this.get(`/${fieldId}/bookings`, { date });
+  }
+
+  // Maintenance operations
+  async createMaintenance(fieldId, maintenanceData) {
+    return this.post(`/${fieldId}/maintenance`, maintenanceData);
+  }
+
+  async updateMaintenance(maintenanceId, maintenanceData) {
+    return this.put(`/maintenance/${maintenanceId}`, maintenanceData);
+  }
+
+  async deleteMaintenance(maintenanceId) {
+    return this.delete(`/maintenance/${maintenanceId}`);
   }
 }
 

@@ -60,6 +60,18 @@ const AdminLayout = () => {
       permission: 'users'
     },
     {
+      path: '/admin/inventory',
+      icon: 'fas fa-boxes',
+      label: 'Tồn kho',
+      permission: 'inventory'
+    },
+    {
+      path: '/admin/maintenance',
+      icon: 'fas fa-tools',
+      label: 'Bảo trì',
+      permission: 'fields'
+    },
+    {
       path: '/admin/reports',
       icon: 'fas fa-chart-line',
       label: 'Báo cáo',
@@ -73,6 +85,8 @@ const AdminLayout = () => {
       '/admin/bookings': 'Quản lý đặt sân',
       '/admin/fields': 'Quản lý sân',
       '/admin/users': 'Quản lý khách hàng',
+      '/admin/inventory': 'Quản lý tồn kho',
+      '/admin/maintenance': 'Quản lý bảo trì',
       '/admin/reports': 'Báo cáo'
     };
     return titles[location.pathname] || 'Admin Panel';

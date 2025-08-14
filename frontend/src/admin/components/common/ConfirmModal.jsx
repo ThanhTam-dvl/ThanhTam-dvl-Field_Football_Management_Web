@@ -1,27 +1,27 @@
-// ====== frontend/src/admin/components/common/ConfirmModal.jsx ======
-const ConfirmModal = ({ message, onConfirm, onCancel }) => {
+// ====== 4. CREATE: frontend/src/admin/components/common/ConfirmModal.jsx ======
+const ConfirmModal = ({ message, onConfirm, onCancel, title = "Xác nhận" }) => {
   return (
-    <div className="admin-customer-modal-overlay">
-      <div className="admin-customer-confirm-modal">
-        <div className="admin-customer-confirm-icon">
+    <div className="admin-modal-overlay" onClick={onCancel}>
+      <div className="admin-confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="admin-confirm-icon">
           <i className="fas fa-question-circle"></i>
         </div>
-        <h3 className="admin-customer-confirm-title">
-          Xác nhận
+        <h3 className="admin-confirm-title">
+          {title}
         </h3>
-        <p className="admin-customer-confirm-message">
+        <p className="admin-confirm-message">
           {message}
         </p>
-        <div className="admin-customer-confirm-actions">
+        <div className="admin-confirm-actions">
           <button
             onClick={onCancel}
-            className="admin-customer-form-btn cancel"
+            className="admin-btn admin-btn-secondary"
           >
             Hủy
           </button>
           <button
             onClick={onConfirm}
-            className="admin-customer-form-btn save"
+            className="admin-btn admin-btn-primary"
           >
             Xác nhận
           </button>

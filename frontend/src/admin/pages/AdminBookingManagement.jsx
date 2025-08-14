@@ -1,32 +1,24 @@
-// frontend/src/admin/pages/AdminBookingManagement.jsx
+// ====== 3. FIX: frontend/src/admin/pages/AdminBookingManagement.jsx ======
 import { useState, useEffect } from 'react';
-import { 
-  getAllBookings, 
-  updateBookingStatus, 
-  deleteBooking,
-  createManualBooking
-} from '../services/bookingService';
-import { getAllFields } from '../services/fieldService';
-import BookingFilters from '../components/BookingFilters';
-import BookingTable from '../components/BookingTable';
-import BookingModal from '../components/BookingModal';
-import ConfirmModal from '../components/ConfirmModal';
-import '../assets/styles/admin.css';
+import { bookingService } from '../services';
+import BookingStats from '../components/booking/BookingStats';
+import BookingFilters from '../components/booking/BookingFilters';
+import BookingTable from '../components/booking/BookingTable';
+import BookingModal from '../components/booking/BookingModal';
+import BulkActions from '../components/booking/BulkActions';
+import ConfirmModal from '../components/common/ConfirmModal';
+import { useToast } from '../hooks/useToast';
 import '../assets/styles/admin-booking.css';
+import '../assets/styles/admin.css';
 
 const AdminBookingManagement = () => {
+  // State management
   const [bookings, setBookings] = useState([]);
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [selectedBookings, setSelectedBookings] = useState([]);
   
-  // Filters & Pagination
-  const [filters, setFilters] = useState({
-    search: '',
-    status: 'all',
-    field: 'all',
-    date: 'all'
-  });
+  // Pagination & Filters
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -34,29 +26,31 @@ const AdminBookingManagement = () => {
     totalPages: 0
   });
   
-  // Selection & Bulk Actions
-  const [selectedBookings, setSelectedBookings] = useState([]);
+  const [filters, setFilters] = useState({
+    search: '',
+    status: 'all',
+    field: 'all',
+    date: 'all'
+  });
   
   // Modals
-  const [showBookingModal, setShowBookingModal] = useState(false);
-  const [editingBooking, setEditingBooking] = useState(null);
-  const [confirmModal, setConfirmModal] = useState({
-    show: false,
-    title: '',
-    message: '',
-    onConfirm: null
+  const [modals, setModals] = useState({
+    booking: false,
+    confirm: false
   });
+  
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState('');
+
+  const { showToast } = useToast();
 
   // Load data on mount and filter changes
   useEffect(() => {
-    loadBookings();
+    loadData();
   }, [filters, pagination.page]);
 
-  useEffect(() => {
-    loadFields();
-  }, []);
-
-  const loadBookings = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
       const params = {
@@ -68,31 +62,27 @@ const AdminBookingManagement = () => {
         date_filter: filters.date !== 'all' ? filters.date : undefined
       };
 
-      const response = await getAllBookings(params);
-      setBookings(response.bookings);
+      const [bookingsData, fieldsData] = await Promise.all([
+        bookingService.getAllBookings(params),
+        bookingService.getFields()
+      ]);
+
+      setBookings(bookingsData.bookings);
       setPagination(prev => ({
         ...prev,
-        total: response.pagination.total,
-        totalPages: response.pagination.totalPages
+        total: bookingsData.pagination.total,
+        totalPages: bookingsData.pagination.totalPages
       }));
-      setError('');
-    } catch (err) {
-      setError('Không thể tải danh sách đặt sân');
-      console.error('Error loading bookings:', err);
+      setFields(fieldsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      showToast('Không thể tải danh sách đặt sân', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadFields = async () => {
-    try {
-      const response = await getAllFields();
-      setFields(response);
-    } catch (err) {
-      console.error('Error loading fields:', err);
-    }
-  };
-
+  // Filter handlers
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
     setPagination(prev => ({ ...prev, page: 1 }));
@@ -103,6 +93,7 @@ const AdminBookingManagement = () => {
     setPagination(prev => ({ ...prev, page }));
   };
 
+  // Selection handlers
   const handleSelectBooking = (bookingId, checked) => {
     if (checked) {
       setSelectedBookings(prev => [...prev, bookingId]);
@@ -112,138 +103,109 @@ const AdminBookingManagement = () => {
   };
 
   const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedBookings(bookings.map(b => b.id));
-    } else {
-      setSelectedBookings([]);
+    setSelectedBookings(checked ? bookings.map(b => b.id) : []);
+  };
+
+  // Modal handlers
+  const openModal = (modalType, data = null) => {
+    if (modalType === 'booking') {
+      setEditingBooking(data);
+    }
+    setModals(prev => ({ ...prev, [modalType]: true }));
+  };
+
+  const closeModal = (modalType) => {
+    setModals(prev => ({ ...prev, [modalType]: false }));
+    if (modalType === 'booking') {
+      setEditingBooking(null);
     }
   };
 
+  // CRUD operations
   const handleStatusUpdate = async (bookingId, newStatus) => {
     try {
-      await updateBookingStatus(bookingId, newStatus);
-      showSuccess(`Cập nhật trạng thái thành công`);
-      loadBookings();
-    } catch (err) {
-      showError('Không thể cập nhật trạng thái');
+      await bookingService.updateBookingStatus(bookingId, newStatus);
+      showToast('Cập nhật trạng thái thành công', 'success');
+      await loadData();
+    } catch (error) {
+      showToast('Không thể cập nhật trạng thái', 'error');
     }
   };
 
-  const handleBulkStatusUpdate = async (newStatus) => {
-    if (selectedBookings.length === 0) return;
-    
-    const statusTexts = {
-      approved: 'duyệt',
-      cancelled: 'từ chối',
-      completed: 'hoàn thành'
-    };
-
-    setConfirmModal({
-      show: true,
-      title: `${statusTexts[newStatus].charAt(0).toUpperCase() + statusTexts[newStatus].slice(1)} đơn đặt sân`,
-      message: `Bạn có chắc chắn muốn ${statusTexts[newStatus]} ${selectedBookings.length} đơn đặt sân?`,
-      onConfirm: async () => {
-        try {
-          await Promise.all(
-            selectedBookings.map(id => updateBookingStatus(id, newStatus))
-          );
-          showSuccess(`${statusTexts[newStatus].charAt(0).toUpperCase() + statusTexts[newStatus].slice(1)} thành công ${selectedBookings.length} đơn`);
-          setSelectedBookings([]);
-          loadBookings();
-        } catch (err) {
-          showError(`Không thể ${statusTexts[newStatus]} đơn đặt sân`);
-        }
+  const handleSaveBooking = async (bookingData) => {
+    try {
+      if (editingBooking) {
+        await bookingService.updateBooking(editingBooking.id, bookingData);
+        showToast('Cập nhật đơn đặt sân thành công', 'success');
+      } else {
+        await bookingService.createManualBooking(bookingData);
+        showToast('Tạo đơn đặt sân thành công', 'success');
       }
-    });
+      closeModal('booking');
+      await loadData();
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || 'Có lỗi xảy ra';
+      showToast(errorMessage, 'error');
+    }
   };
 
   const handleDelete = (bookingId) => {
-    setConfirmModal({
-      show: true,
-      title: 'Xóa đơn đặt sân',
-      message: 'Bạn có chắc chắn muốn xóa đơn đặt sân này? Hành động này không thể hoàn tác.',
-      onConfirm: async () => {
+    showConfirm(
+      'Bạn có chắc chắn muốn xóa đơn đặt sân này? Hành động này không thể hoàn tác.',
+      async () => {
         try {
-          await deleteBooking(bookingId);
-          showSuccess('Xóa đơn đặt sân thành công');
-          loadBookings();
-        } catch (err) {
-          showError('Không thể xóa đơn đặt sân');
+          await bookingService.deleteBooking(bookingId);
+          showToast('Xóa đơn đặt sân thành công', 'success');
+          await loadData();
+        } catch (error) {
+          showToast('Không thể xóa đơn đặt sân', 'error');
         }
       }
-    });
-  };
-
-  const handleBulkDelete = () => {
-    if (selectedBookings.length === 0) return;
-
-    setConfirmModal({
-      show: true,
-      title: 'Xóa đơn đặt sân',
-      message: `Bạn có chắc chắn muốn xóa ${selectedBookings.length} đơn đặt sân? Hành động này không thể hoàn tác.`,
-      onConfirm: async () => {
-        try {
-          await Promise.all(
-            selectedBookings.map(id => deleteBooking(id))
-          );
-          showSuccess(`Xóa thành công ${selectedBookings.length} đơn đặt sân`);
-          setSelectedBookings([]);
-          loadBookings();
-        } catch (err) {
-          showError('Không thể xóa đơn đặt sân');
-        }
-      }
-    });
-  };
-
-  const handleEdit = (booking) => {
-    setEditingBooking(booking);
-    setShowBookingModal(true);
-  };
-
-  const handleCreateNew = () => {
-    setEditingBooking(null);
-    setShowBookingModal(true);
-  };
-
-  const handleBookingSave = async (bookingData) => {
-    try {
-      if (editingBooking) {
-        // Update existing booking (implement if needed)
-        showSuccess('Cập nhật đơn đặt sân thành công');
-      } else {
-        // Create new manual booking
-        await createManualBooking(bookingData);
-        showSuccess('Tạo đơn đặt sân thành công');
-      }
-      setShowBookingModal(false);
-      setEditingBooking(null);
-      loadBookings();
-    } catch (err) {
-      showError(editingBooking ? 'Không thể cập nhật đơn đặt sân' : 'Không thể tạo đơn đặt sân');
-    }
-  };
-
-  const showSuccess = (message) => {
-    // You can implement a toast notification here
-    console.log('Success:', message);
-  };
-
-  const showError = (message) => {
-    // You can implement a toast notification here
-    console.error('Error:', message);
-  };
-
-  if (loading && bookings.length === 0) {
-    return (
-      <div className="admin-loading-container">
-        <div className="admin-loading-spinner">
-          <i className="fas fa-spinner fa-spin"></i>
-          <span>Đang tải dữ liệu...</span>
-        </div>
-      </div>
     );
-  }
+  };
+
+  // Bulk operations
+  const handleBulkAction = (action) => {
+    if (selectedBookings.length === 0) return;
+    
+    const actionText = {
+      approved: 'duyệt',
+      cancelled: 'từ chối',
+      completed: 'hoàn thành',
+      delete: 'xóa'
+    };
+
+    showConfirm(
+      `Bạn có chắc chắn muốn ${actionText[action]} ${selectedBookings.length} đơn đặt sân?`,
+      async () => {
+        try {
+          if (action === 'delete') {
+            await Promise.all(selectedBookings.map(id => bookingService.deleteBooking(id)));
+          } else {
+            await Promise.all(selectedBookings.map(id => bookingService.updateBookingStatus(id, action)));
+          }
+          showToast(`${actionText[action]} thành công ${selectedBookings.length} đơn`, 'success');
+          setSelectedBookings([]);
+          await loadData();
+        } catch (error) {
+          showToast(`Không thể ${actionText[action]} đơn đặt sân`, 'error');
+        }
+      }
+    );
+  };
+
+  // Confirm helper
+  const showConfirm = (message, action) => {
+    setConfirmMessage(message);
+    setConfirmAction(() => action);
+    openModal('confirm');
+  };
+
+  const handleConfirm = () => {
+    closeModal('confirm');
+    if (confirmAction) confirmAction();
+    setConfirmAction(null);
+  };
 
   return (
     <div className="admin-booking-management">
@@ -252,20 +214,23 @@ const AdminBookingManagement = () => {
         <div className="admin-header-actions">
           <button 
             className="admin-btn admin-btn-primary"
-            onClick={handleCreateNew}
+            onClick={() => openModal('booking')}
           >
             <i className="fas fa-plus"></i>
             <span className="admin-desktop-only">Thêm đơn</span>
           </button>
           <button 
             className="admin-btn admin-btn-secondary"
-            onClick={loadBookings}
+            onClick={loadData}
           >
             <i className="fas fa-sync-alt"></i>
             <span className="admin-desktop-only">Làm mới</span>
           </button>
         </div>
       </div>
+
+      {/* Stats */}
+      <BookingStats bookings={bookings} />
 
       {/* Filters */}
       <BookingFilters
@@ -276,42 +241,10 @@ const AdminBookingManagement = () => {
 
       {/* Bulk Actions */}
       {selectedBookings.length > 0 && (
-        <div className="admin-bulk-actions">
-          <div className="admin-bulk-info">
-            <span>{selectedBookings.length} đơn được chọn</span>
-          </div>
-          <div className="admin-bulk-buttons">
-            <button 
-              className="admin-btn admin-btn-success admin-btn-sm"
-              onClick={() => handleBulkStatusUpdate('approved')}
-            >
-              <i className="fas fa-check"></i>
-              Duyệt tất cả
-            </button>
-            <button 
-              className="admin-btn admin-btn-warning admin-btn-sm"
-              onClick={() => handleBulkStatusUpdate('cancelled')}
-            >
-              <i className="fas fa-times"></i>
-              Từ chối tất cả
-            </button>
-            <button 
-              className="admin-btn admin-btn-danger admin-btn-sm"
-              onClick={handleBulkDelete}
-            >
-              <i className="fas fa-trash"></i>
-              Xóa tất cả
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {error && (
-        <div className="admin-error-message">
-          <i className="fas fa-exclamation-triangle"></i>
-          {error}
-        </div>
+        <BulkActions
+          selectedCount={selectedBookings.length}
+          onBulkAction={handleBulkAction}
+        />
       )}
 
       {/* Bookings Table */}
@@ -322,36 +255,25 @@ const AdminBookingManagement = () => {
         onSelectBooking={handleSelectBooking}
         onSelectAll={handleSelectAll}
         onStatusUpdate={handleStatusUpdate}
-        onEdit={handleEdit}
+        onEdit={(booking) => openModal('booking', booking)}
         onDelete={handleDelete}
-        pagination={pagination}
-        onPageChange={handlePageChange}
       />
 
       {/* Modals */}
-      {showBookingModal && (
+      {modals.booking && (
         <BookingModal
           booking={editingBooking}
           fields={fields}
-          onSave={handleBookingSave}
-          onClose={() => {
-            setShowBookingModal(false);
-            setEditingBooking(null);
-          }}
+          onSave={handleSaveBooking}
+          onClose={() => closeModal('booking')}
         />
       )}
 
-      {confirmModal.show && (
+      {modals.confirm && (
         <ConfirmModal
-          title={confirmModal.title}
-          message={confirmModal.message}
-          onConfirm={() => {
-            confirmModal.onConfirm();
-            setConfirmModal({ show: false, title: '', message: '', onConfirm: null });
-          }}
-          onCancel={() => {
-            setConfirmModal({ show: false, title: '', message: '', onConfirm: null });
-          }}
+          message={confirmMessage}
+          onConfirm={handleConfirm}
+          onCancel={() => closeModal('confirm')}
         />
       )}
     </div>

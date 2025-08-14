@@ -1,4 +1,4 @@
-// ====== frontend/src/admin/services/bookingService.js ======
+// ====== 1. FIX: frontend/src/admin/services/bookingService.js ======
 import BaseService from './baseService';
 
 class BookingService extends BaseService {
@@ -25,13 +25,19 @@ class BookingService extends BaseService {
   async createManualBooking(bookingData) {
     return this.post('/manual', bookingData);
   }
+
+  // FIX: Add getFields method properly
+  async getFields() {
+    try {
+      // Use the admin/fields endpoint directly
+      const response = await this.request('GET', '/admin/fields');
+      return response;
+    } catch (error) {
+      console.error('Error getting fields:', error);
+      return [];
+    }
+  }
 }
 
 export default new BookingService();
 
-// Named exports for compatibility
-export const getAllBookings = (params) => new BookingService().getAllBookings(params);
-export const updateBookingStatus = (bookingId, status, notes) => new BookingService().updateBookingStatus(bookingId, status, notes);
-export const updateBooking = (bookingId, data) => new BookingService().updateBooking(bookingId, data);
-export const deleteBooking = (bookingId) => new BookingService().deleteBooking(bookingId);
-export const createManualBooking = (data) => new BookingService().createManualBooking(data);

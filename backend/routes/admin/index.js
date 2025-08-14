@@ -1,8 +1,3 @@
-// ========================
-// 🔗 BACKEND ROUTES REFACTORING
-// ========================
-
-// ====== backend/routes/admin/index.js (Main Admin Routes) ======
 const express = require('express');
 const router = express.Router();
 
@@ -13,6 +8,8 @@ const bookingRoutes = require('./bookingRoutes');
 const customerRoutes = require('./customerRoutes');
 const fieldRoutes = require('./fieldRoutes');
 const revenueRoutes = require('./revenueRoutes');
+const inventoryRoutes = require('./inventoryRoutes');
+const maintenanceRoutes = require('./maintenanceRoutes');
 
 // Mount sub-routes
 router.use('/auth', authRoutes);
@@ -21,13 +18,7 @@ router.use('/bookings', bookingRoutes);
 router.use('/customers', customerRoutes);
 router.use('/fields', fieldRoutes);
 router.use('/revenue', revenueRoutes);
+router.use('/inventory', inventoryRoutes);
+router.use('/maintenance', maintenanceRoutes);
 
 module.exports = router;
-
-
-
-
-
-
-
-

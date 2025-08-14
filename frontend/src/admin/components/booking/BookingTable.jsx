@@ -1,4 +1,5 @@
-// frontend/src/admin/components/BookingTable.jsx
+
+// ====== 2. FIX: frontend/src/admin/components/booking/BookingTable.jsx ======
 import { useState } from 'react';
 
 const BookingTable = ({ 
@@ -9,9 +10,7 @@ const BookingTable = ({
   onSelectAll, 
   onStatusUpdate, 
   onEdit, 
-  onDelete,
-  pagination,
-  onPageChange 
+  onDelete
 }) => {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -23,7 +22,6 @@ const BookingTable = ({
       setSortField(field);
       setSortDirection('asc');
     }
-    // You can implement sorting logic here if needed
   };
 
   const formatCurrency = (amount) => {
@@ -49,68 +47,6 @@ const BookingTable = ({
       completed: { class: 'info', text: 'Hoàn thành', icon: 'check-circle' }
     };
     return statusMap[status] || { class: 'secondary', text: status, icon: 'question' };
-  };
-
-  const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
-
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage < maxVisiblePages - 1) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    // Previous button
-    pages.push(
-      <button
-        key="prev"
-        className={`admin-pagination-btn ${pagination.page === 1 ? 'disabled' : ''}`}
-        onClick={() => pagination.page > 1 && onPageChange(pagination.page - 1)}
-        disabled={pagination.page === 1}
-      >
-        <i className="fas fa-chevron-left"></i>
-      </button>
-    );
-
-    // Page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          className={`admin-pagination-btn ${pagination.page === i ? 'active' : ''}`}
-          onClick={() => onPageChange(i)}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    // Next button
-    pages.push(
-      <button
-        key="next"
-        className={`admin-pagination-btn ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}
-        onClick={() => pagination.page < pagination.totalPages && onPageChange(pagination.page + 1)}
-        disabled={pagination.page === pagination.totalPages}
-      >
-        <i className="fas fa-chevron-right"></i>
-      </button>
-    );
-
-    return (
-      <div className="admin-pagination">
-        <div className="admin-pagination-info">
-          Hiển thị {Math.min((pagination.page - 1) * pagination.limit + 1, pagination.total)}-
-          {Math.min(pagination.page * pagination.limit, pagination.total)} trong tổng số {pagination.total} đơn
-        </div>
-        <div className="admin-pagination-controls">
-          {pages}
-        </div>
-      </div>
-    );
   };
 
   if (bookings.length === 0 && !loading) {
@@ -365,9 +301,6 @@ const BookingTable = ({
           )}
         </div>
       </div>
-
-      {/* Pagination */}
-      {renderPagination()}
     </div>
   );
 };
