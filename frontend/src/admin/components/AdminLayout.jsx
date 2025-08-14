@@ -60,6 +60,12 @@ const AdminLayout = () => {
       permission: 'users'
     },
     {
+      path: '/admin/teams',
+      icon: 'fas fa-handshake',
+      label: 'Kèo & Ghép đội',
+      permission: 'bookings'
+    },
+    {
       path: '/admin/inventory',
       icon: 'fas fa-boxes',
       label: 'Tồn kho',
@@ -85,6 +91,7 @@ const AdminLayout = () => {
       '/admin/bookings': 'Quản lý đặt sân',
       '/admin/fields': 'Quản lý sân',
       '/admin/users': 'Quản lý khách hàng',
+      '/admin/teams': 'Quản lý Kèo & Ghép đội',
       '/admin/inventory': 'Quản lý tồn kho',
       '/admin/maintenance': 'Quản lý bảo trì',
       '/admin/reports': 'Báo cáo'

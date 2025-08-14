@@ -1,0 +1,531 @@
+/* frontend/src/admin/assets/styles/team-management.css */
+
+.admin-team-management {
+  padding: var(--admin-spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Stats Grid */
+.team-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--admin-spacing-lg);
+  margin-bottom: var(--admin-spacing-2xl);
+}
+
+.stat-card {
+  background: linear-gradient(135deg, var(--admin-bg-card), var(--admin-bg-secondary));
+  border-radius: 16px;
+  padding: var(--admin-spacing-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-lg);
+  box-shadow: var(--admin-shadow);
+  border: 1px solid var(--admin-border);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-lg);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+  background: linear-gradient(135deg, var(--admin-highlight), #d63031);
+  flex-shrink: 0;
+}
+
+.stat-icon.active {
+  background: linear-gradient(135deg, var(--admin-success), #00a085);
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.2;
+}
+
+/* Tab Navigation */
+.team-tabs {
+  display: flex;
+  gap: var(--admin-spacing-sm);
+  margin-bottom: var(--admin-spacing-xl);
+  background-color: var(--admin-bg-card);
+  padding: var(--admin-spacing-sm);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow);
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-md) var(--admin-spacing-lg);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  flex: 1;
+  justify-content: center;
+}
+
+.tab-btn:hover {
+  background-color: var(--admin-bg-hover);
+  color: var(--admin-text-primary);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--admin-highlight), #d63031);
+  color: white;
+  box-shadow: var(--admin-shadow);
+}
+
+/* Filters */
+.team-filters {
+  background-color: var(--admin-bg-card);
+  border-radius: 12px;
+  padding: var(--admin-spacing-lg);
+  margin-bottom: var(--admin-spacing-xl);
+  box-shadow: var(--admin-shadow);
+  border: 1px solid var(--admin-border);
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--admin-spacing-sm);
+  align-items: center;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-input,
+.filter-select {
+  width: 100%;
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  background-color: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--admin-highlight);
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+.filter-input::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.filter-clear-btn {
+  background-color: var(--admin-bg-primary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--admin-spacing-xs);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.filter-clear-btn:hover {
+  background-color: var(--admin-bg-hover);
+  color: var(--admin-text-primary);
+}
+
+/* Content */
+.team-content {
+  background-color: var(--admin-bg-card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--admin-shadow);
+  border: 1px solid var(--admin-border);
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px var(--admin-spacing-lg);
+  color: var(--admin-text-primary);
+  gap: var(--admin-spacing-md);
+}
+
+.loading-container i {
+  font-size: 2rem;
+  color: var(--admin-highlight);
+}
+
+/* Table */
+.team-table-container {
+  overflow-x: auto;
+}
+
+.team-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.team-table th {
+  background-color: var(--admin-bg-primary);
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-md);
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+}
+
+.team-table td {
+  padding: var(--admin-spacing-md);
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.team-table tbody tr:hover {
+  background-color: var(--admin-bg-hover);
+}
+
+/* Table Content Styles */
+.creator-info,
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.creator-name,
+.contact div:first-child {
+  font-weight: 600;
+  color: var(--admin-text-primary);
+}
+
+.creator-phone,
+.contact div:last-child {
+  font-size: 0.8rem;
+  color: var(--admin-text-secondary);
+}
+
+.field-type {
+  background-color: var(--admin-info);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.datetime {
+  font-weight: 500;
+  color: var(--admin-text-primary);
+}
+
+.players {
+  font-weight: 600;
+  color: var(--admin-success);
+}
+
+.players-needed {
+  font-weight: 600;
+  color: var(--admin-warning);
+}
+
+.price {
+  font-weight: 600;
+  color: var(--admin-success);
+}
+
+.position {
+  background-color: rgba(162, 155, 254, 0.2);
+  color: var(--admin-info);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.level {
+  text-transform: capitalize;
+  color: var(--admin-text-primary);
+  font-weight: 500;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.open {
+  background-color: rgba(0, 184, 148, 0.2);
+  color: var(--admin-success);
+}
+
+.status-badge.full {
+  background-color: rgba(253, 203, 110, 0.2);
+  color: var(--admin-warning);
+}
+
+.status-badge.completed {
+  background-color: rgba(116, 185, 255, 0.2);
+  color: var(--admin-info);
+}
+
+.status-badge.closed {
+  background-color: rgba(225, 112, 85, 0.2);
+  color: var(--admin-danger);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: var(--admin-spacing-xs);
+  justify-content: center;
+}
+
+.action-btn {
+  background: none;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-xs);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.8rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background-color: var(--admin-bg-secondary);
+  color: var(--admin-text-primary);
+}
+
+.action-btn.view {
+  border-color: var(--admin-info);
+  color: var(--admin-info);
+}
+
+.action-btn.view:hover {
+  background-color: var(--admin-info);
+  color: white;
+}
+
+.action-btn.edit {
+  border-color: var(--admin-warning);
+  color: var(--admin-warning);
+}
+
+.action-btn.edit:hover {
+  background-color: var(--admin-warning);
+  color: white;
+}
+
+.action-btn.delete {
+  border-color: var(--admin-danger);
+  color: var(--admin-danger);
+}
+
+.action-btn.delete:hover {
+  background-color: var(--admin-danger);
+  color: white;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px var(--admin-spacing-lg);
+  color: var(--admin-text-muted);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: var(--admin-spacing-lg);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.3rem;
+  margin-bottom: var(--admin-spacing-sm);
+  color: var(--admin-text-primary);
+}
+
+.empty-state p {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-spacing-md);
+  padding: var(--admin-spacing-lg);
+  background-color: var(--admin-bg-primary);
+  border-top: 1px solid var(--admin-border);
+}
+
+.pagination-btn {
+  background-color: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text-secondary);
+  padding: var(--admin-spacing-xs) var(--admin-spacing-sm);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  min-width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: var(--admin-bg-hover);
+  color: var(--admin-text-primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--admin-text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .admin-team-management {
+    padding: var(--admin-spacing-md);
+  }
+  
+  .team-stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--admin-spacing-md);
+  }
+  
+  .stat-card {
+    padding: var(--admin-spacing-lg);
+    gap: var(--admin-spacing-md);
+  }
+  
+  .stat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.3rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .team-tabs {
+    flex-direction: column;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .team-table-container {
+    font-size: 0.8rem;
+  }
+  
+  .team-table th,
+  .team-table td {
+    padding: var(--admin-spacing-sm);
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card {
+    padding: var(--admin-spacing-md);
+  }
+  
+  .tab-btn {
+    padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+    font-size: 0.9rem;
+  }
+  
+  .team-filters {
+    padding: var(--admin-spacing-md);
+  }
+  
+  .pagination {
+    padding: var(--admin-spacing-md);
+  }
+  
+  .pagination-btn {
+    min-width: 36px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+}

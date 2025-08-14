@@ -10,6 +10,8 @@ const fieldRoutes = require('./fieldRoutes');
 const revenueRoutes = require('./revenueRoutes');
 const inventoryRoutes = require('./inventoryRoutes');
 const maintenanceRoutes = require('./maintenanceRoutes');
+const matchRoutes = require('./matchRoutes');
+const teamJoinRoutes = require('./teamJoinRoutes');
 
 // Mount sub-routes
 router.use('/auth', authRoutes);
@@ -20,5 +22,7 @@ router.use('/fields', fieldRoutes);
 router.use('/revenue', revenueRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/maintenance', maintenanceRoutes);
+router.use('/matches', matchRoutes);
+router.use('/team-joins', teamJoinRoutes);
 
 module.exports = router;

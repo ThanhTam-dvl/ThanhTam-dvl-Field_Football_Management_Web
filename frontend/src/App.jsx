@@ -20,6 +20,7 @@ import AdminBookingManagement from './admin/pages/AdminBookingManagement';
 import AdminCustomerManagement from './admin/pages/AdminCustomerManagement';
 import AdminInventoryManagement from './admin/pages/AdminInventoryManagement';
 import AdminMaintenanceManagement from './admin/pages/AdminMaintenanceManagement';
+import AdminTeamManagement from './admin/pages/AdminTeamManagement';
 
 // Shared Components
 import ScrollToTop from './components/ScrollToTop';
@@ -88,6 +89,13 @@ function App() {
               <Route path="maintenance" element={
                 <ProtectedAdminRoute permission="fields">
                   <AdminMaintenanceManagement />
+                </ProtectedAdminRoute>
+              } />
+
+              {/* Team Management - Cần quyền 'bookings' */}
+              <Route path="teams" element={
+                <ProtectedAdminRoute permission="bookings">
+                  <AdminTeamManagement />
                 </ProtectedAdminRoute>
               } />
               
