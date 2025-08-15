@@ -10,7 +10,7 @@ function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Simple theme management without context for now
+  // Theme management
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -74,8 +74,8 @@ function Header() {
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled 
-          ? 'bg-white/98 dark:bg-gray-900/98 backdrop-blur-md shadow-lg border-b border-gray-200/50 dark:border-gray-700/50' 
-          : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-md'
+          ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50 dark:border-gray-700/50' 
+          : 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md'
       }`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-12 md:h-16">
@@ -197,7 +197,7 @@ function Header() {
         {/* Mobile Navigation */}
         <div className={`xl:hidden transition-all duration-300 ease-in-out ${
           menuOpen ? 'max-h-80 opacity-100' : 'max-h-0 opacity-0'
-        } overflow-hidden bg-white/98 dark:bg-gray-900/98 backdrop-blur-md border-t border-gray-200/50 dark:border-gray-700/50`}>
+        } overflow-hidden bg-white/98 dark:bg-gray-900/98 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50`}>
           <div className="px-3 py-3 space-y-1">
             {navItems.map((item) => (
               <Link

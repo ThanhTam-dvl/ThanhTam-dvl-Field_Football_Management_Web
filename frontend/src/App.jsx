@@ -26,7 +26,6 @@ import AdminTeamManagement from './admin/pages/AdminTeamManagement';
 import ScrollToTop from './components/ScrollToTop';
 
 // Styles - Customer và Admin có CSS riêng biệt
-import './assets/styles/styles.css'; // Customer styles
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 function App() {

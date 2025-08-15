@@ -3,8 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import BookingSearchForm from '../components/BookingSearchForm';
+import FieldCard from '../components/FieldCard';
+import BookingModal from '../components/BookingModal';
 import { createBooking } from '../services/bookingService';
-import { fetchAvailableFields } from '../services/bookingService';
 import LoginModal from '../components/LoginModal';
 
 function Booking() {
@@ -14,74 +16,36 @@ function Booking() {
   const [searchInfo, setSearchInfo] = useState(null);
   const [selected, setSelected] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const resultRef = useRef(null);
 
-  // Form search state
-  const [form, setForm] = useState({
-    date: new Date().toISOString().split('T')[0],
-    startTime: '',
-    endTime: '',
-    fieldTypes: ['5', '7'],
-  });
-
-  const timeOptions = [];
-  for (let h = 6; h <= 22; h++) {
-    timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
-    if (h < 22) timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
-  }
-
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    if (type === 'checkbox') {
-      setForm((prev) => {
-        const types = checked
-          ? [...prev.fieldTypes, value]
-          : prev.fieldTypes.filter((v) => v !== value);
-        return { ...prev, fieldTypes: types };
-      });
-    } else {
-      setForm(prev => ({ ...prev, [name]: value }));
+  // Auto scroll to results when search is performed
+  useEffect(() => {
+    if (searchInfo && resultRef.current) {
+      const timer = setTimeout(() => {
+        resultRef.current.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 300);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [searchInfo]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Update search state when fields change
+  useEffect(() => {
+    if (searchInfo) {
+      setSearchPerformed(true);
+    }
+  }, [fields, searchInfo]);
 
-    const start = parseInt(form.startTime);
-    const end = parseInt(form.endTime);
-    const duration = end - start;
-
-    if (duration < 1 || duration > 3) {
-      alert('Bạn chỉ được phép đặt sân từ 1 đến 3 giờ.');
+  const handleConfirmBooking = async (formData) => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để đặt sân');
       return;
     }
 
     setIsLoading(true);
-    try {
-      const fields = await fetchAvailableFields(form);
-      setFields(fields);
-      setSearchInfo(form);
-    } catch (err) {
-      console.error(err);
-      alert('Lỗi khi tìm sân trống.');
-      setFields([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBook = (field, slot) => {
-    if (!user) {
-      document.getElementById('login-modal')?.classList.add('active');
-      document.body.style.overflow = 'hidden';
-    } else {
-      setSelected({ field, slot });
-      setShowBookingModal(true);
-    }
-  };
-
-  const handleConfirmBooking = async (formData) => {
     try {
       const payload = {
         user_id: user.id,
@@ -92,464 +56,311 @@ function Booking() {
         total_amount: selected.slot.price,
         payment_method: formData.payment,
         notes: formData.note,
+        phone_number: formData.phone,
+        customer_name: formData.name,
       };
 
       await createBooking(payload);
-      alert('Đặt sân thành công!');
+      alert('Đặt sân thành công! Cảm ơn bạn đã sử dụng dịch vụ.');
       setSelected(null);
-      setShowBookingModal(false);
+      
+      // Refresh search results
+      if (searchInfo) {
+        const updatedFields = fields.filter(f => f.id !== selected.field.id);
+        setFields(updatedFields);
+      }
     } catch (err) {
-      console.error(err);
-      alert('Đặt sân thất bại!');
+      console.error('Booking error:', err);
+      alert('Đặt sân thất bại. Vui lòng thử lại hoặc liên hệ hỗ trợ.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
+  const handleBook = (field, slot) => {
+    if (!user) {
+      // Show login modal
+      const modal = document.getElementById('login-modal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      setSelected({ field, slot });
+    }
   };
 
-  const resultRef = useRef(null);
-  useEffect(() => {
-    if (searchInfo && resultRef.current) {
-      resultRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [searchInfo]);
+  const formatDateForDisplay = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      weekday: 'long',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getDuration = () => {
+    if (!searchInfo?.startTime || !searchInfo?.endTime) return 0;
+    const start = parseInt(searchInfo.startTime.split(':')[0]);
+    const end = parseInt(searchInfo.endTime.split(':')[0]);
+    return end - start;
+  };
+
+  const getFieldTypeLabels = (types) => {
+    const labels = {
+      '5': '5v5',
+      '7': '7v7',
+      '11': '11v11'
+    };
+    return types.map(type => labels[type] || type).join(', ');
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-900 dark:to-green-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-25 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-green-900">
       <Header />
       
-      <main className="pt-12 md:pt-16">
+      <main>
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-green-600 to-green-700 dark:from-gray-800 dark:to-green-800 text-white py-8 md:py-16">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 text-center">
-            <div className="max-w-3xl mx-auto">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
-                Đặt Sân Bóng
-              </h1>
-              <p className="text-base md:text-xl text-green-100 opacity-90">
-                Tìm và đặt sân trống nhanh chóng, dễ dàng
-              </p>
-            </div>
+        <section className="relative bg-gradient-to-r from-green-600 via-green-700 to-emerald-700 dark:from-gray-800 dark:via-green-800 dark:to-emerald-900 overflow-hidden">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white rounded-full animate-float"></div>
+            <div className="absolute top-20 right-20 w-24 h-24 border-2 border-white rounded-full animate-float" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-20 left-1/3 w-40 h-40 border-2 border-white rounded-full animate-float" style={{animationDelay: '2s'}}></div>
+            <div className="absolute bottom-10 right-10 w-20 h-20 border-2 border-white rounded-full animate-float" style={{animationDelay: '3s'}}></div>
           </div>
-        </section>
 
-        {/* Search Form */}
-        <section className="py-6 md:py-8">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-            <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 md:p-8 -mt-8 md:-mt-12 relative z-10">
-              <div className="flex items-center space-x-3 mb-4 md:mb-6">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-search text-white text-sm md:text-base"></i>
-                </div>
-                <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Tìm sân trống
-                </h2>
+          <div className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8 md:py-12">
+            <div className="text-center text-white animate-slide-up">
+              {/* Badge */}
+              <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 mb-4">
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium">Đặt sân nhanh chóng & tiện lợi</span>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Ngày đặt
-                    </label>
-                    <input
-                      type="date"
-                      name="date"
-                      value={form.date}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-                    />
-                  </div>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+                Đặt sân bóng{' '}
+                <span className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                  yêu thích
+                </span>
+              </h1>
+              
+              <p className="text-sm md:text-base lg:text-lg text-green-100 max-w-2xl mx-auto leading-relaxed">
+                Tìm và đặt sân bóng trống nhanh chóng với hệ thống tìm kiếm thông minh
+              </p>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Từ giờ
-                    </label>
-                    <select
-                      name="startTime"
-                      value={form.startTime}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-                    >
-                      <option value="" disabled>Chọn giờ</option>
-                      {timeOptions.slice(0, -1).map((t) => (
-                        <option key={t} value={t}>{t}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Đến giờ
-                    </label>
-                    <select
-                      name="endTime"
-                      value={form.endTime}
-                      onChange={handleChange}
-                      required
-                      disabled={!form.startTime}
-                      className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-300 disabled:opacity-50"
-                    >
-                      <option value="" disabled>Chọn giờ</option>
-                      {timeOptions
-                        .filter(t => t > form.startTime)
-                        .map((t) => (
-                          <option key={t} value={t}>{t}</option>
-                        ))}
-                    </select>
-                  </div>
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-4 mt-6 md:mt-8 max-w-md mx-auto">
+                <div className="text-center">
+                  <div className="text-lg md:text-xl font-bold text-yellow-300">500+</div>
+                  <div className="text-xs text-green-200">Sân bóng</div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Loại sân
-                  </label>
-                  <div className="grid grid-cols-3 gap-3 md:gap-4">
-                    {['5', '7', '11'].map((type) => (
-                      <label
-                        key={type}
-                        className={`relative flex items-center justify-center p-3 md:p-4 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                          form.fieldTypes.includes(type)
-                            ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:border-green-400'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          value={type}
-                          checked={form.fieldTypes.includes(type)}
-                          onChange={handleChange}
-                          className="sr-only"
-                        />
-                        <div className="text-center">
-                          <div className="text-lg md:text-xl font-bold">Sân {type}</div>
-                          <div className="text-xs md:text-sm opacity-75">{type} người</div>
-                        </div>
-                        {form.fieldTypes.includes(type) && (
-                          <div className="absolute top-2 right-2 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                            <i className="fas fa-check text-white text-xs"></i>
-                          </div>
-                        )}
-                      </label>
-                    ))}
-                  </div>
+                <div className="text-center">
+                  <div className="text-lg md:text-xl font-bold text-yellow-300">24/7</div>
+                  <div className="text-xs text-green-200">Hỗ trợ</div>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 md:py-4 px-4 rounded-lg md:rounded-xl font-semibold hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-sm md:text-base"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      <span>Đang tìm kiếm...</span>
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-search"></i>
-                      <span>Tìm sân trống</span>
-                    </>
-                  )}
-                </button>
-
-                {form.date && form.startTime && form.endTime && (
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 md:p-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                      <span className="flex items-center space-x-1">
-                        <i className="fas fa-calendar text-green-500"></i>
-                        <span>{formatDate(form.date)}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <i className="fas fa-clock text-green-500"></i>
-                        <span>{form.startTime} - {form.endTime}</span>
-                      </span>
-                      <span className="flex items-center space-x-1">
-                        <i className="fas fa-futbol text-green-500"></i>
-                        <span>Sân {form.fieldTypes.join(', ')} người</span>
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </form>
+                <div className="text-center">
+                  <div className="text-lg md:text-xl font-bold text-yellow-300">99%</div>
+                  <div className="text-xs text-green-200">Hài lòng</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Search Results */}
-        <section className="py-6 md:py-8" ref={resultRef}>
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-lg md:text-2xl font-bold text-gray-900 dark:text-gray-100">
-                Kết quả tìm kiếm
-              </h2>
-              {fields.length > 0 && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  {fields.length} sân có sẵn
+        {/* Search Section */}
+        <section className="relative -mt-8 md:-mt-12 pb-8">
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-6">
+            <BookingSearchForm 
+              setFields={setFields} 
+              setSearchInfo={setSearchInfo}
+            />
+          </div>
+        </section>
+
+        {/* Results Section */}
+        <section ref={resultRef} className="py-6 md:py-8">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+            
+            {/* Results Header */}
+            <div className="mb-6 md:mb-8">
+              {!searchPerformed ? (
+                <div className="text-center animate-fade-in">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-search text-white text-2xl"></i>
+                  </div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                    Sẵn sàng tìm sân?
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto text-sm md:text-base">
+                    Sử dụng form tìm kiếm ở trên để xem các sân bóng có sẵn theo thời gian bạn muốn
+                  </p>
+                </div>
+              ) : (
+                <div className="animate-slide-up">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                    <div>
+                      <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                        Kết quả tìm kiếm
+                      </h2>
+                      <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                        Tìm thấy <span className="font-semibold text-green-600 dark:text-green-400">{fields.length}</span> sân phù hợp
+                      </p>
+                    </div>
+                    
+                    {fields.length > 0 && (
+                      <div className="mt-3 md:mt-0">
+                        <span className="inline-flex items-center px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                          <i className="fas fa-check-circle mr-2 text-xs"></i>
+                          Có sẵn ngay
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Search Summary */}
+                  {searchInfo && (
+                    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-4 mb-6">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <i className="fas fa-filter text-blue-500 text-sm"></i>
+                        <span className="font-medium text-gray-900 dark:text-gray-100 text-sm">Bộ lọc đã chọn:</span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        <span className="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md">
+                          <i className="fas fa-calendar mr-1"></i>
+                          {formatDateForDisplay(searchInfo.date)}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md">
+                          <i className="fas fa-clock mr-1"></i>
+                          {searchInfo.startTime} - {searchInfo.endTime} ({getDuration()}h)
+                        </span>
+                        <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md">
+                          <i className="fas fa-futbol mr-1"></i>
+                          {getFieldTypeLabels(searchInfo.fieldTypes)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {!searchInfo ? (
-              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-8 md:p-12 text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-search text-gray-400 text-2xl md:text-3xl"></i>
-                </div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Vui lòng tìm kiếm để xem các sân trống
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Chọn ngày, giờ và loại sân để tìm sân phù hợp
-                </p>
-              </div>
-            ) : fields.length === 0 ? (
-              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 p-8 md:p-12 text-center">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <i className="fas fa-calendar-times text-gray-400 text-2xl md:text-3xl"></i>
-                </div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Không có sân trống
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Không tìm thấy sân nào phù hợp với yêu cầu của bạn
-                </p>
-                <button
-                  onClick={() => setSearchInfo(null)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-300"
-                >
-                  Tìm kiếm lại
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {fields.map((field) => {
-                  const slot = (field.slots ?? [])[0];
-                  if (!slot) return null;
-
-                  return (
-                    <div
-                      key={field.id}
-                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                      <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4">
-                        <h3 className="font-bold text-lg">{field.name}</h3>
-                        <p className="text-green-100 text-sm">{field.type}</p>
+            {/* Results Grid */}
+            {searchPerformed && (
+              <div className="transition-all duration-500">
+                {fields.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                    {fields.map((field, index) => (
+                      <FieldCard
+                        key={field.id}
+                        field={field}
+                        searchInfo={searchInfo}
+                        onBook={handleBook}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 animate-fade-in">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <i className="fas fa-search text-gray-400 text-3xl"></i>
+                    </div>
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      Không tìm thấy sân phù hợp
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto text-sm md:text-base">
+                      Hiện tại không có sân nào trống trong khung thời gian bạn chọn. Hãy thử:
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto text-sm">
+                      <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <i className="fas fa-clock text-blue-500 mb-2"></i>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">Thay đổi giờ</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs">Chọn khung giờ khác</div>
                       </div>
-
-                      <div className="p-4">
-                        <div className="mb-4">
-                          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Khung giờ trống:
-                          </div>
-                          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 flex items-center justify-between">
-                            <div>
-                              <div className="font-semibold text-green-700 dark:text-green-400">
-                                {slot.label}
-                              </div>
-                              <div className="text-xl font-bold text-green-600 dark:text-green-300">
-                                {slot.price.toLocaleString()} VNĐ
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleBook(field, slot)}
-                          className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2.5 px-4 rounded-lg font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center space-x-2"
-                        >
-                          <i className="fas fa-calendar-plus"></i>
-                          <span>Đặt ngay</span>
-                        </button>
+                      <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <i className="fas fa-calendar text-green-500 mb-2"></i>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">Chọn ngày khác</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs">Thử ngày khác</div>
+                      </div>
+                      <div className="bg-white dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                        <i className="fas fa-futbol text-purple-500 mb-2"></i>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">Thay loại sân</div>
+                        <div className="text-gray-600 dark:text-gray-400 text-xs">Chọn thêm loại sân</div>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                )}
               </div>
             )}
           </div>
         </section>
+
+        {/* Features Section */}
+        <section className="py-8 md:py-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">
+                Tại sao chọn chúng tôi?
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-sm md:text-base">
+                Những ưu điểm vượt trội khi đặt sân tại hệ thống của chúng tôi
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              {[
+                {
+                  icon: 'fas fa-bolt',
+                  title: 'Đặt sân nhanh chóng',
+                  description: 'Tìm và đặt sân chỉ trong vài phút với giao diện thân thiện',
+                  color: 'from-yellow-500 to-orange-500'
+                },
+                {
+                  icon: 'fas fa-shield-check',
+                  title: 'Đảm bảo chất lượng',
+                  description: 'Tất cả sân đều được kiểm tra và đảm bảo chất lượng tốt nhất',
+                  color: 'from-green-500 to-green-600'
+                },
+                {
+                  icon: 'fas fa-headset',
+                  title: 'Hỗ trợ 24/7',
+                  description: 'Đội ngũ hỗ trợ khách hàng luôn sẵn sàng giúp đỡ bạn',
+                  color: 'from-blue-500 to-blue-600'
+                }
+              ].map((feature, index) => (
+                <div key={index} className="group bg-white dark:bg-gray-900 rounded-xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700">
+                  <div className={`w-12 h-12 bg-gradient-to-r ${feature.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                    <i className={`${feature.icon} text-white text-lg`}></i>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
 
-      {/* Booking Modal */}
-      {showBookingModal && selected && (
+      {/* Modals */}
+      {selected && (
         <BookingModal
           field={selected.field}
           slot={selected.slot}
           searchInfo={searchInfo}
-          onClose={() => {
-            setShowBookingModal(false);
-            setSelected(null);
-          }}
+          onClose={() => setSelected(null)}
           onConfirm={handleConfirmBooking}
         />
       )}
 
       <Footer />
       <LoginModal />
-    </div>
-  );
-}
-
-// Booking Modal Component
-function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
-  const { user } = useAuth();
-  const [form, setForm] = useState({
-    phone: user?.phone_number || '',
-    name: user?.name || '',
-    note: '',
-    payment: 'cash',
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.phone || !form.name) {
-      alert('Vui lòng nhập đủ thông tin');
-      return;
-    }
-    onConfirm(form);
-  };
-
-  const formatDate = (dateString) => {
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold">Đặt sân</h3>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center transition-colors duration-300"
-          >
-            <i className="fas fa-times"></i>
-          </button>
-        </div>
-
-        <div className="p-4">
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4">
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Sân:</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {field.name} ({field.type})
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Ngày:</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {formatDate(searchInfo.date)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Thời gian:</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {slot.label}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">Giá:</span>
-                <span className="font-bold text-green-600 dark:text-green-400">
-                  {slot.price.toLocaleString()} VNĐ
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Số điện thoại
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                placeholder="Nhập số điện thoại"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Họ tên
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                placeholder="Nhập họ tên"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Ghi chú
-              </label>
-              <textarea
-                name="note"
-                value={form.note}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                placeholder="Thông tin thêm (nếu có)"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Phương thức thanh toán
-              </label>
-              <div className="space-y-3">
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="cash"
-                    checked={form.payment === 'cash'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-gray-900 dark:text-gray-100">Tiền mặt</span>
-                </label>
-                <label className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="online"
-                    checked={form.payment === 'online'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-gray-900 dark:text-gray-100">Thanh toán online</span>
-                </label>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-lg font-medium hover:shadow-lg hover:shadow-green-500/25 transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              Xác nhận đặt sân
-            </button>
-          </form>
-        </div>
-      </div>
     </div>
   );
 }
