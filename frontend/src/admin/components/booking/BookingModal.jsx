@@ -1,4 +1,4 @@
-// ====== frontend/src/admin/components/booking/BookingModal.jsx (UPDATED & CLEANED) ======
+// ====== frontend/src/admin/components/booking/BookingModal.jsx (TAILWIND) ======
 import { useState, useEffect } from 'react';
 
 const BookingModal = ({ booking, fields, onSave, onClose }) => {
@@ -148,197 +148,277 @@ const BookingModal = ({ booking, fields, onSave, onClose }) => {
   };
 
   return (
-    <div className="admin-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="admin-modal">
-        <div className="admin-modal-header">
-          <h2>
-            <i className="fas fa-clipboard-list"></i>
-            {booking ? 'Chỉnh sửa đơn đặt sân' : 'Thêm đơn đặt sân'}
-          </h2>
-          <button className="admin-modal-close" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-[modalSlideIn_0.3s_ease-out]">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-purple-600">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <i className="fas fa-clipboard-list text-white"></i>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                {booking ? 'Chỉnh sửa đơn đặt sân' : 'Thêm đơn đặt sân'}
+              </h2>
+              <p className="text-blue-100 text-sm">
+                {booking ? 'Cập nhật thông tin đặt sân' : 'Tạo đơn đặt sân mới cho khách hàng'}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200 text-white"
+          >
             <i className="fas fa-times"></i>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="admin-modal-body">
-          {/* Customer Information */}
-          <div className="admin-form-section">
-            <h3>Thông tin khách hàng</h3>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="customer_name">
-                  Tên khách hàng <span className="admin-required">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="customer_name"
-                  value={formData.customer_name}
-                  onChange={(e) => handleInputChange('customer_name', e.target.value)}
-                  className={errors.customer_name ? 'admin-input-error' : ''}
-                  placeholder="Nhập tên khách hàng"
-                />
-                {errors.customer_name && (
-                  <span className="admin-error-text">{errors.customer_name}</span>
-                )}
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6">
+            {/* Customer Information */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-user text-green-600 dark:text-green-400 text-sm"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Thông tin khách hàng
+                </h3>
               </div>
               
-              <div className="admin-form-group">
-                <label htmlFor="phone_number">
-                  Số điện thoại <span className="admin-required">*</span>
-                </label>
-                <input
-                  type="tel"
-                  id="phone_number"
-                  value={formData.phone_number}
-                  onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                  className={errors.phone_number ? 'admin-input-error' : ''}
-                  placeholder="Nhập số điện thoại"
-                />
-                {errors.phone_number && (
-                  <span className="admin-error-text">{errors.phone_number}</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Booking Information */}
-          <div className="admin-form-section">
-            <h3>Thông tin đặt sân</h3>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="field_id">
-                  Sân <span className="admin-required">*</span>
-                </label>
-                <select
-                  id="field_id"
-                  value={formData.field_id}
-                  onChange={(e) => handleInputChange('field_id', e.target.value)}
-                  className={errors.field_id ? 'admin-input-error' : ''}
-                >
-                  <option value="">Chọn sân</option>
-                  {fields.map(field => (
-                    <option key={field.id} value={field.id}>
-                      {field.name} ({field.type}) - {formatCurrency(field.price_per_hour)}/giờ
-                    </option>
-                  ))}
-                </select>
-                {errors.field_id && (
-                  <span className="admin-error-text">{errors.field_id}</span>
-                )}
-              </div>
-              
-              <div className="admin-form-group">
-                <label htmlFor="booking_date">
-                  Ngày đá <span className="admin-required">*</span>
-                </label>
-                <input
-                  type="date"
-                  id="booking_date"
-                  value={formData.booking_date}
-                  onChange={(e) => handleInputChange('booking_date', e.target.value)}
-                  className={errors.booking_date ? 'admin-input-error' : ''}
-                  min={new Date().toISOString().split('T')[0]}
-                />
-                {errors.booking_date && (
-                  <span className="admin-error-text">{errors.booking_date}</span>
-                )}
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="start_time">
-                  Giờ bắt đầu <span className="admin-required">*</span>
-                </label>
-                <select
-                  id="start_time"
-                  value={formData.start_time}
-                  onChange={(e) => handleInputChange('start_time', e.target.value)}
-                  className={errors.start_time ? 'admin-input-error' : ''}
-                >
-                  <option value="">Chọn giờ</option>
-                  {generateTimeOptions()}
-                </select>
-                {errors.start_time && (
-                  <span className="admin-error-text">{errors.start_time}</span>
-                )}
-              </div>
-              
-              <div className="admin-form-group">
-                <label htmlFor="end_time">
-                  Giờ kết thúc <span className="admin-required">*</span>
-                </label>
-                <select
-                  id="end_time"
-                  value={formData.end_time}
-                  onChange={(e) => handleInputChange('end_time', e.target.value)}
-                  className={errors.end_time ? 'admin-input-error' : ''}
-                  disabled={!formData.start_time}
-                >
-                  <option value="">Chọn giờ</option>
-                  {getEndTimeOptions()}
-                </select>
-                {errors.end_time && (
-                  <span className="admin-error-text">{errors.end_time}</span>
-                )}
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="total_amount">Tổng tiền</label>
-                <div className="admin-amount-display">
-                  {formatCurrency(formData.total_amount)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tên khách hàng <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.customer_name}
+                    onChange={(e) => handleInputChange('customer_name', e.target.value)}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+                      errors.customer_name 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder="Nhập tên khách hàng"
+                  />
+                  {errors.customer_name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.customer_name}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Số điện thoại <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone_number}
+                    onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+                      errors.phone_number 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    placeholder="Nhập số điện thoại"
+                  />
+                  {errors.phone_number && (
+                    <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Additional Information */}
-          <div className="admin-form-section">
-            <h3>Thông tin bổ sung</h3>
-            <div className="admin-form-group">
-              <label htmlFor="notes">Ghi chú</label>
-              <textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Ghi chú thêm (tùy chọn)"
-                rows="3"
-              />
+            {/* Booking Information */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-futbol text-blue-600 dark:text-blue-400 text-sm"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Thông tin đặt sân
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Sân <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.field_id}
+                    onChange={(e) => handleInputChange('field_id', e.target.value)}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+                      errors.field_id 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    <option value="">Chọn sân</option>
+                    {fields.map(field => (
+                      <option key={field.id} value={field.id}>
+                        {field.name} ({field.type}) - {formatCurrency(field.price_per_hour)}/giờ
+                      </option>
+                    ))}
+                  </select>
+                  {errors.field_id && (
+                    <p className="text-red-500 text-sm mt-1">{errors.field_id}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Ngày đá <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.booking_date}
+                    onChange={(e) => handleInputChange('booking_date', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+                      errors.booking_date 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  />
+                  {errors.booking_date && (
+                    <p className="text-red-500 text-sm mt-1">{errors.booking_date}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Giờ bắt đầu <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.start_time}
+                    onChange={(e) => handleInputChange('start_time', e.target.value)}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 ${
+                      errors.start_time 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    <option value="">Chọn giờ</option>
+                    {generateTimeOptions()}
+                  </select>
+                  {errors.start_time && (
+                    <p className="text-red-500 text-sm mt-1">{errors.start_time}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Giờ kết thúc <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.end_time}
+                    onChange={(e) => handleInputChange('end_time', e.target.value)}
+                    disabled={!formData.start_time}
+                    className={`w-full px-4 py-2.5 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                      errors.end_time 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                  >
+                    <option value="">Chọn giờ</option>
+                    {getEndTimeOptions()}
+                  </select>
+                  {errors.end_time && (
+                    <p className="text-red-500 text-sm mt-1">{errors.end_time}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Total Amount Display */}
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-money-bill-wave text-green-600 dark:text-green-400 text-sm"></i>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Tổng tiền</p>
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {formatCurrency(formData.total_amount)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                  <i className="fas fa-sticky-note text-gray-600 dark:text-gray-400 text-sm"></i>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Thông tin bổ sung
+                </h3>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Ghi chú
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  rows="3"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200 resize-none"
+                  placeholder="Ghi chú thêm (tùy chọn)"
+                />
+              </div>
             </div>
           </div>
         </form>
 
-        <div className="admin-modal-footer">
+        {/* Footer */}
+        <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <button
             type="button"
-            className="admin-btn admin-btn-secondary"
             onClick={onClose}
             disabled={loading}
+            className="px-6 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 font-medium disabled:opacity-50"
           >
             Hủy
           </button>
           <button
             type="submit"
-            className="admin-btn admin-btn-primary"
             onClick={handleSubmit}
             disabled={loading}
+            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:transform-none flex items-center space-x-2"
           >
             {loading ? (
               <>
-                <i className="fas fa-spinner fa-spin"></i>
-                Đang lưu...
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <span>Đang lưu...</span>
               </>
             ) : (
               <>
                 <i className="fas fa-save"></i>
-                {booking ? 'Cập nhật' : 'Tạo đơn'}
+                <span>{booking ? 'Cập nhật' : 'Tạo đơn'}</span>
               </>
             )}
           </button>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes modalSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+      `}</style>
     </div>
   );
 };
