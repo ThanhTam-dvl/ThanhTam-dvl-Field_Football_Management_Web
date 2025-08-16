@@ -1,4 +1,4 @@
-// ====== frontend/src/admin/pages/AdminCustomerManagement.jsx ======
+// ====== frontend/src/admin/pages/AdminCustomerManagement.jsx (TAILWIND VERSION) ======
 import { useState, useEffect } from 'react';
 import { customerService } from '../services';
 import CustomerStats from '../components/customer/CustomerStats';
@@ -11,7 +11,6 @@ import BulkActions from '../components/customer/BulkActions';
 import Pagination from '../components/common/Pagination';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useToast } from '../hooks/useToast';
-import '../assets/styles/customer-management.css';
 
 const AdminCustomerManagement = () => {
   // State management
@@ -230,90 +229,105 @@ const AdminCustomerManagement = () => {
   };
 
   if (loading && customers.length === 0) {
-    return <LoadingSpinner message="Đang tải dữ liệu..." />;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner message="Đang tải dữ liệu..." />
+      </div>
+    );
   }
 
   return (
-    <div className="admin-customer-management">
-      {/* Header Stats */}
-      <CustomerStats stats={stats} />
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-full px-3 sm:px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+              Quản lý khách hàng
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Quản lý thông tin và hoạt động của khách hàng
+            </p>
+          </div>
+        </div>
 
-      {/* Filters */}
-      <CustomerFilters
-        filters={filters}
-        onFilterChange={handleFilterChange}
-        onAddCustomer={() => openModal('customer')}
-      />
+        {/* Stats Cards */}
+        <CustomerStats stats={stats} />
 
-      {/* Bulk Actions */}
-      {selectedCustomers.length > 0 && (
-        <BulkActions
-          selectedCount={selectedCustomers.length}
-          onBulkAction={handleBulkAction}
-          onExport={handleExportCustomers}
+        {/* Filters */}
+        <CustomerFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onAddCustomer={() => openModal('customer')}
         />
-      )}
 
-      {/* Customer Table */}
-      <CustomerTable
-        customers={customers}
-        selectedCustomers={selectedCustomers}
-        filters={filters}
-        onSelectCustomer={handleSelectCustomer}
-        onSelectAll={handleSelectAll}
-        onSort={handleSort}
-        onViewDetail={handleViewCustomerDetail}
-        onEditCustomer={(customer) => openModal('customer', customer)}
-        onDeleteCustomer={handleDeleteCustomer}
-      />
+        {/* Bulk Actions */}
+        {selectedCustomers.length > 0 && (
+          <BulkActions
+            selectedCount={selectedCustomers.length}
+            onBulkAction={handleBulkAction}
+            onExport={handleExportCustomers}
+          />
+        )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
-
-      {/* Customer Modal */}
-      {modals.customer && (
-        <CustomerModal
-          customer={editingCustomer}
-          onSave={handleSaveCustomer}
-          onClose={() => closeModal('customer')}
+        {/* Customer Table */}
+        <CustomerTable
+          customers={customers}
+          selectedCustomers={selectedCustomers}
+          filters={filters}
+          onSelectCustomer={handleSelectCustomer}
+          onSelectAll={handleSelectAll}
+          onSort={handleSort}
+          onViewDetail={handleViewCustomerDetail}
+          onEditCustomer={(customer) => openModal('customer', customer)}
+          onDeleteCustomer={handleDeleteCustomer}
           loading={loading}
         />
-      )}
 
-      {/* Customer Detail Modal */}
-      {modals.detail && selectedCustomerDetail && (
-        <CustomerDetailModal
-          customer={selectedCustomerDetail}
-          onClose={() => closeModal('detail')}
-          onEdit={() => {
-            closeModal('detail');
-            openModal('customer', selectedCustomerDetail);
-          }}
-        />
-      )}
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        )}
 
-      {/* Confirm Modal */}
-      {modals.confirm && (
-        <ConfirmModal
-          message={confirmMessage}
-          onConfirm={handleConfirm}
-          onCancel={() => closeModal('confirm')}
-        />
-      )}
+        {/* Customer Modal */}
+        {modals.customer && (
+          <CustomerModal
+            customer={editingCustomer}
+            onSave={handleSaveCustomer}
+            onClose={() => closeModal('customer')}
+            loading={loading}
+          />
+        )}
+
+        {/* Customer Detail Modal */}
+        {modals.detail && selectedCustomerDetail && (
+          <CustomerDetailModal
+            customer={selectedCustomerDetail}
+            onClose={() => closeModal('detail')}
+            onEdit={() => {
+              closeModal('detail');
+              openModal('customer', selectedCustomerDetail);
+            }}
+          />
+        )}
+
+        {/* Confirm Modal */}
+        {modals.confirm && (
+          <ConfirmModal
+            message={confirmMessage}
+            onConfirm={handleConfirm}
+            onCancel={() => closeModal('confirm')}
+          />
+        )}
+      </div>
     </div>
   );
 };
 
 export default AdminCustomerManagement;
-
-
-
-
