@@ -1,4 +1,4 @@
-// ====== frontend/src/admin/pages/AdminFieldManagement.jsx (REFACTORED) ======
+// ====== frontend/src/admin/pages/AdminFieldManagement.jsx (TAILWIND VERSION) ======
 import { useState, useEffect } from 'react';
 import { fieldService, bookingService } from '../services';
 import FieldDateNavigation from '../components/field/FieldDateNavigation';
@@ -10,7 +10,6 @@ import BookingDetailModal from '../components/field/BookingDetailModal';
 import CreateBookingModal from '../components/field/CreateBookingModal';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { useToast } from '../hooks/useToast';
-import '../assets/styles/field-management.css';
 
 const AdminFieldManagement = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -41,10 +40,11 @@ const AdminFieldManagement = () => {
       setLoading(true);
       const dateStr = formatDateForAPI(currentDate);
       const data = await fieldService.getFieldsWithBookings(dateStr);
-      setFieldsData(data);
+      setFieldsData(data || []);
     } catch (error) {
       console.error('Error loading field data:', error);
       showToast('Không thể tải dữ liệu sân', 'error');
+      setFieldsData([]);
     } finally {
       setLoading(false);
     }
@@ -136,11 +136,36 @@ const AdminFieldManagement = () => {
   };
 
   if (loading && fieldsData.length === 0) {
-    return <LoadingSpinner message="Đang tải dữ liệu..." />;
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner message="Đang tải dữ liệu sân..." />
+      </div>
+    );
   }
 
   return (
-    <div className="admin-field-management">
+    <div className="space-y-4 md:space-y-6 p-3 md:p-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+            Quản lý sân
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Xem lịch đặt sân và quản lý hoạt động sân bóng
+          </p>
+        </div>
+        
+        <button 
+          onClick={loadFieldData}
+          disabled={loading}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 text-sm disabled:opacity-50"
+        >
+          <i className={`fas fa-sync-alt ${loading ? 'animate-spin' : ''}`}></i>
+          <span>Làm mới</span>
+        </button>
+      </div>
+
       {/* Date Navigation */}
       <FieldDateNavigation
         currentDate={currentDate}
@@ -159,27 +184,45 @@ const AdminFieldManagement = () => {
         loading={loading}
       />
 
-      {/* Content Views */}
-      {currentView === 'timeline' ? (
-        <FieldTimeline
-          fieldsData={fieldsData}
-          onTimeSlotClick={handleTimeSlotClick}
-          filters={filters}
-        />
-      ) : (
-        <FieldList
-          fieldsData={fieldsData}
-          currentDate={currentDate}
-          onBookingClick={(booking) => {
-            setSelectedBooking(booking);
-            openModal('bookingDetail');
-          }}
-          filters={filters}
-        />
-      )}
-
       {/* Legend */}
       <FieldLegend />
+
+      {/* Content Views */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <LoadingSpinner message="Đang tải..." />
+          </div>
+        ) : fieldsData.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-calendar-times text-gray-400 text-2xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Không có dữ liệu sân
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              Không thể tải dữ liệu sân cho ngày này
+            </p>
+          </div>
+        ) : currentView === 'timeline' ? (
+          <FieldTimeline
+            fieldsData={fieldsData}
+            onTimeSlotClick={handleTimeSlotClick}
+            filters={filters}
+          />
+        ) : (
+          <FieldList
+            fieldsData={fieldsData}
+            currentDate={currentDate}
+            onBookingClick={(booking) => {
+              setSelectedBooking(booking);
+              openModal('bookingDetail');
+            }}
+            filters={filters}
+          />
+        )}
+      </div>
 
       {/* Modals */}
       {modals.bookingDetail && selectedBooking && (
@@ -205,8 +248,3 @@ const AdminFieldManagement = () => {
 };
 
 export default AdminFieldManagement;
-
-
-
-
-
