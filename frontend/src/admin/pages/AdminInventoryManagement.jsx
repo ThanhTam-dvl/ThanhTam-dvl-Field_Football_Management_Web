@@ -1,7 +1,12 @@
-// frontend/src/admin/pages/AdminInventoryManagement.jsx
+// ====== frontend/src/admin/pages/AdminInventoryManagement.jsx (OPTIMIZED MOBILE VERSION) ======
 import { useState, useEffect, useCallback } from 'react';
 import inventoryService from '../services/inventoryService';
-import '../assets/styles/inventory-management.css';
+import InventoryStats from '../components/inventory/InventoryStats';
+import InventoryFilters from '../components/inventory/InventoryFilters';
+import ProductGrid from '../components/inventory/ProductGrid';
+import ProductTable from '../components/inventory/ProductTable';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import { useToast } from '../hooks/useToast';
 
 const AdminInventoryManagement = () => {
   const [products, setProducts] = useState([]);
@@ -13,6 +18,8 @@ const AdminInventoryManagement = () => {
     category: 'all',
     stock_status: 'all'
   });
+
+  const { showToast } = useToast();
 
   // Fetch data
   const fetchData = useCallback(async () => {
@@ -26,10 +33,11 @@ const AdminInventoryManagement = () => {
       setStats(statsData);
     } catch (error) {
       console.error('Error fetching inventory data:', error);
+      showToast('Lỗi tải dữ liệu tồn kho', 'error');
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, showToast]);
 
   useEffect(() => {
     fetchData();
@@ -50,26 +58,22 @@ const AdminInventoryManagement = () => {
 
   // Quick stock actions
   const handleQuickImport = async (productId) => {
-    if (window.confirm('Nhập thêm 10 sản phẩm?')) {
-      try {
-        await inventoryService.quickStockUpdate(productId, 10, 'import');
-        fetchData();
-        alert('Nhập hàng thành công!');
-      } catch (error) {
-        alert('Lỗi nhập hàng: ' + error.message);
-      }
+    try {
+      await inventoryService.quickStockUpdate(productId, 10, 'import');
+      await fetchData();
+      showToast('Nhập hàng thành công!', 'success');
+    } catch (error) {
+      showToast('Lỗi nhập hàng: ' + error.message, 'error');
     }
   };
 
   const handleQuickExport = async (productId) => {
-    if (window.confirm('Xuất 1 sản phẩm?')) {
-      try {
-        await inventoryService.quickStockUpdate(productId, 1, 'export');
-        fetchData();
-        alert('Xuất hàng thành công!');
-      } catch (error) {
-        alert('Lỗi xuất hàng: ' + error.message);
-      }
+    try {
+      await inventoryService.quickStockUpdate(productId, 1, 'export');
+      await fetchData();
+      showToast('Xuất hàng thành công!', 'success');
+    } catch (error) {
+      showToast('Lỗi xuất hàng: ' + error.message, 'error');
     }
   };
 
@@ -102,306 +106,139 @@ const AdminInventoryManagement = () => {
     }).format(price);
   };
 
-  if (loading) {
+  if (loading && products.length === 0) {
     return (
-      <div className="admin-loading-container">
-        <div className="admin-loading-spinner">
-          <i className="fas fa-spinner fa-spin"></i>
-          <span>Đang tải dữ liệu tồn kho...</span>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <LoadingSpinner message="Đang tải dữ liệu tồn kho..." />
       </div>
     );
   }
 
   return (
-    <div className="inventory-management-content">
-      {/* Summary Statistics */}
-      <section className="inventory-summary">
-        <div className="summary-card total">
-          <div className="card-icon">
-            <i className="fas fa-box"></i>
+    <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-full px-3 sm:px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-6">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
+              Quản lý tồn kho
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Quản lý sản phẩm và theo dõi tồn kho
+            </p>
           </div>
-          <div className="card-content">
-            <div className="card-value">{stats.total_stock || 0}</div>
-            <div className="card-label">Tổng tồn kho</div>
-          </div>
-        </div>
-
-        <div className="summary-card value">
-          <div className="card-icon">
-            <i className="fas fa-dollar-sign"></i>
-          </div>
-          <div className="card-content">
-            <div className="card-value">{formatPrice(stats.total_value || 0)}</div>
-            <div className="card-label">Giá trị tồn kho</div>
-          </div>
-        </div>
-
-        <div className="summary-card out-stock">
-          <div className="card-icon">
-            <i className="fas fa-exclamation-triangle"></i>
-          </div>
-          <div className="card-content">
-            <div className="card-value">{stats.out_of_stock || 0}</div>
-            <div className="card-label">Hết hàng</div>
-          </div>
-        </div>
-
-        <div className="summary-card transactions">
-          <div className="card-icon">
-            <i className="fas fa-exchange-alt"></i>
-          </div>
-          <div className="card-content">
-            <div className="card-value">{stats.today_transactions || 0}</div>
-            <div className="card-label">Giao dịch hôm nay</div>
-          </div>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="inventory-filters">
-        <div className="filters-row">
-          <div className="filter-group">
-            <label>Tìm kiếm</label>
-            <input
-              type="text"
-              className="filter-input"
-              placeholder="Tìm theo tên, mã sản phẩm..."
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-            />
-          </div>
-
-          <div className="filter-group">
-            <label>Danh mục</label>
-            <select
-              className="filter-select"
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-            >
-              <option value="all">Tất cả danh mục</option>
-              <option value="soft-drink">Nước ngọt</option>
-              <option value="energy-drink">Nước tăng lực</option>
-              <option value="water">Nước suối</option>
-              <option value="tea">Trà</option>
-              <option value="snack">Đồ ăn nhẹ</option>
-              <option value="equipment">Thiết bị</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <label>Trạng thái tồn kho</label>
-            <select
-              className="filter-select"
-              value={filters.stock_status}
-              onChange={(e) => handleFilterChange('stock_status', e.target.value)}
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="in-stock">Còn hàng</option>
-              <option value="low-stock">Sắp hết</option>
-              <option value="out-of-stock">Hết hàng</option>
-            </select>
-          </div>
-
-          <div className="filter-group">
-            <button
-              className="alert-action"
-              onClick={clearFilters}
-              style={{ marginTop: '26px' }}
-            >
-              <i className="fas fa-times"></i> Xóa lọc
-            </button>
-          </div>
-
-          <div className="view-toggle">
-            <button
-              className={`view-btn ${view === 'grid' ? 'active' : ''}`}
-              onClick={() => setView('grid')}
-            >
-              <i className="fas fa-th"></i>
-            </button>
-            <button
-              className={`view-btn ${view === 'list' ? 'active' : ''}`}
-              onClick={() => setView('list')}
-            >
-              <i className="fas fa-list"></i>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Low Stock Alert */}
-      {stats.low_stock > 0 && (
-        <section className="inventory-alert">
-          <div className="alert-icon">
-            <i className="fas fa-exclamation-triangle"></i>
-          </div>
-          <div className="alert-content">
-            <h4>Cảnh báo tồn kho thấp</h4>
-            <p>Có {stats.low_stock} sản phẩm sắp hết hàng. Cần nhập thêm hàng sớm.</p>
-          </div>
-          <button 
-            className="alert-action"
-            onClick={() => handleFilterChange('stock_status', 'low-stock')}
-          >
-            Xem chi tiết
-          </button>
-        </section>
-      )}
-
-      {/* Products Display */}
-      {products.length === 0 ? (
-        <div className="inventory-empty">
-          <i className="fas fa-box-open"></i>
-          <h3>Không có sản phẩm nào</h3>
-          <p>Thử thay đổi bộ lọc hoặc thêm sản phẩm mới</p>
-        </div>
-      ) : view === 'grid' ? (
-        // Grid View
-        <section className="products-grid">
-          {products.map((product) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image">
-                <i className="fas fa-box"></i>
-                <span className={`stock-badge ${product.stock_status}`}>
-                  {getStockStatusText(product.stock_status)}
-                </span>
-              </div>
-              
-              <div className="product-info">
-                <div className="product-code">{product.code}</div>
-                <h3 className="product-name">{product.name}</h3>
-                <div className="product-category">{getCategoryText(product.category)}</div>
-                
-                <div className="product-stock">
-                  <div className="stock-info">
-                    <span className="stock-label">Tồn kho:</span>
-                    <span className={`stock-value ${product.stock_status}`}>
-                      {product.current_stock} {product.unit}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="product-prices">
-                  <div className="price-item">
-                    <span className="price-label">Giá nhập:</span>
-                    <span className="price-value">{formatPrice(product.purchase_price)}</span>
-                  </div>
-                  <div className="price-item">
-                    <span className="price-label">Giá bán:</span>
-                    <span className="price-value">{formatPrice(product.selling_price)}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="product-actions">
-                <button className="action-btn view" title="Xem chi tiết">
-                  <i className="fas fa-eye"></i>
-                </button>
-                <button 
-                  className="action-btn import" 
-                  title="Nhập hàng"
-                  onClick={() => handleQuickImport(product.id)}
-                >
-                  <i className="fas fa-plus"></i>
-                </button>
-                <button 
-                  className="action-btn export" 
-                  title="Xuất hàng"
-                  onClick={() => handleQuickExport(product.id)}
-                  disabled={product.current_stock === 0}
-                >
-                  <i className="fas fa-minus"></i>
-                </button>
-                <button className="action-btn edit" title="Chỉnh sửa">
-                  <i className="fas fa-edit"></i>
-                </button>
-                <button className="action-btn delete" title="Xóa">
-                  <i className="fas fa-trash"></i>
-                </button>
-              </div>
+          
+          <div className="flex items-center space-x-2">
+            {/* View Toggle - Now visible on mobile */}
+            <div className="flex bg-gray-200 dark:bg-gray-700 p-1 rounded-lg">
+              <button
+                onClick={() => setView('grid')}
+                className={`p-2 rounded-md transition-colors duration-200 ${
+                  view === 'grid'
+                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+                title="Xem dạng lưới"
+              >
+                <i className="fas fa-th text-sm"></i>
+              </button>
+              <button
+                onClick={() => setView('list')}
+                className={`p-2 rounded-md transition-colors duration-200 ${
+                  view === 'list'
+                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+                title="Xem dạng danh sách"
+              >
+                <i className="fas fa-list text-sm"></i>
+              </button>
             </div>
-          ))}
-        </section>
-      ) : (
-        // Table View
-        <section className="products-table-container">
-          <table className="products-table">
-            <thead>
-              <tr>
-                <th>Mã SP</th>
-                <th>Tên sản phẩm</th>
-                <th>Danh mục</th>
-                <th>Tồn kho</th>
-                <th>Đơn vị</th>
-                <th>Giá nhập</th>
-                <th>Giá bán</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.code}</td>
-                  <td>
-                    <div>
-                      <strong>{product.name}</strong>
-                      {product.description && (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--admin-text-muted)' }}>
-                          {product.description}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td>{getCategoryText(product.category)}</td>
-                  <td>
-                    <span className={`stock-badge ${product.stock_status}`}>
-                      {product.current_stock}
-                    </span>
-                  </td>
-                  <td>{product.unit}</td>
-                  <td>{formatPrice(product.purchase_price)}</td>
-                  <td>{formatPrice(product.selling_price)}</td>
-                  <td>
-                    <span className={`stock-badge ${product.stock_status}`}>
-                      {getStockStatusText(product.stock_status)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <button className="table-action-btn view" title="Xem chi tiết">
-                        <i className="fas fa-eye"></i>
-                      </button>
-                      <button 
-                        className="table-action-btn import" 
-                        title="Nhập hàng"
-                        onClick={() => handleQuickImport(product.id)}
-                      >
-                        <i className="fas fa-plus"></i>
-                      </button>
-                      <button 
-                        className="table-action-btn export" 
-                        title="Xuất hàng"
-                        onClick={() => handleQuickExport(product.id)}
-                        disabled={product.current_stock === 0}
-                      >
-                        <i className="fas fa-minus"></i>
-                      </button>
-                      <button className="table-action-btn edit" title="Chỉnh sửa">
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="table-action-btn delete" title="Xóa">
-                        <i className="fas fa-trash"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      )}
+            
+            <button 
+              onClick={fetchData}
+              disabled={loading}
+              className="flex items-center justify-center p-2 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 text-sm disabled:opacity-50"
+              title="Làm mới"
+            >
+              <i className={`fas fa-sync-alt ${loading ? 'animate-spin' : ''}`}></i>
+              <span className="hidden md:inline ml-2">Làm mới</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <InventoryStats stats={stats} formatPrice={formatPrice} />
+
+        {/* Low Stock Alert */}
+        {stats.low_stock > 0 && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-8 h-8 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                <i className="fas fa-exclamation-triangle text-amber-600 dark:text-amber-400 text-sm"></i>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                  Cảnh báo tồn kho thấp
+                </h4>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Có {stats.low_stock} sản phẩm sắp hết hàng. Cần nhập thêm hàng sớm.
+                </p>
+              </div>
+              <button 
+                onClick={() => handleFilterChange('stock_status', 'low-stock')}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-md transition-colors duration-200"
+              >
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Filters */}
+        <InventoryFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={clearFilters}
+          getCategoryText={getCategoryText}
+        />
+
+        {/* Products Display */}
+        {products.length === 0 && !loading ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-box-open text-gray-400 text-2xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Không có sản phẩm nào
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              Thử thay đổi bộ lọc hoặc thêm sản phẩm mới
+            </p>
+          </div>
+        ) : view === 'grid' ? (
+          <ProductGrid
+            products={products}
+            getCategoryText={getCategoryText}
+            getStockStatusText={getStockStatusText}
+            formatPrice={formatPrice}
+            onQuickImport={handleQuickImport}
+            onQuickExport={handleQuickExport}
+            loading={loading}
+          />
+        ) : (
+          <ProductTable
+            products={products}
+            getCategoryText={getCategoryText}
+            getStockStatusText={getStockStatusText}
+            formatPrice={formatPrice}
+            onQuickImport={handleQuickImport}
+            onQuickExport={handleQuickExport}
+            loading={loading}
+          />
+        )}
+      </div>
     </div>
   );
 };
