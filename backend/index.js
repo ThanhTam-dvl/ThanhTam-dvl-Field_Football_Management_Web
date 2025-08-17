@@ -14,6 +14,7 @@ const userRoutes = require('./routes/userRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 //Admin
 const adminRoutes = require('./routes/adminRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes'); // New route for dashboard stats
 
 const db = require('./config/db');
 
@@ -29,10 +30,11 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/auth', authRoutes); 
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/team-join', teamJoinRoutes); 
+app.use('/api/team-joins', teamJoinRoutes); 
 app.use('/api/contact', contactRoutes);
 //Admin Routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

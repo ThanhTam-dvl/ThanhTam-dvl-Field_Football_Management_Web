@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { sendOtp, verifyOtp } from '../services/authService';
+import { sendOtp, verifyOtp, adminLogin } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -110,7 +110,7 @@ function LoginModal() {
     }
   };
 
-  // Admin Login
+  // Admin Login - FIXED VERSION
   const handleAdminLogin = async () => {
     if (!emailOrPhone.trim() || !password.trim()) {
       alert('Vui lòng nhập đầy đủ email và mật khẩu');
@@ -119,21 +119,37 @@ function LoginModal() {
     
     setIsLoading(true);
     try {
-      // TODO: Implement admin login API call
-      // const res = await adminLogin(emailOrPhone, password);
+      console.log('Attempting admin login with:', emailOrPhone);
       
-      // Demo login - replace with real API
-      if (emailOrPhone === 'admin@footballfield.com' && password === 'admin123') {
-        const modal = document.getElementById('login-modal');
-        modal?.classList.remove('active');
-        document.body.style.overflow = '';
-        navigate('/admin/dashboard');
-      } else {
-        alert('Email hoặc mật khẩu không đúng');
-      }
+      // Call real admin login API
+      const response = await adminLogin(emailOrPhone, password);
+      
+      console.log('Admin login response:', response);
+      
+      // Store admin session
+      localStorage.setItem('adminToken', response.sessionToken);
+      localStorage.setItem('adminUser', JSON.stringify(response.admin));
+      
+      // Close modal
+      const modal = document.getElementById('login-modal');
+      modal?.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // Force page reload to ensure AdminContext picks up the new token
+      window.location.href = '/admin/dashboard';
+      
+      alert('Đăng nhập admin thành công!');
     } catch (err) {
-      console.error(err);
-      alert('Đăng nhập thất bại. Vui lòng thử lại.');
+      console.error('Admin login error:', err);
+      
+      // More specific error handling
+      if (err.response?.status === 401) {
+        alert('Email hoặc mật khẩu không đúng');
+      } else if (err.response?.status === 400) {
+        alert('Thông tin đăng nhập không hợp lệ');
+      } else {
+        alert('Đăng nhập thất bại. Vui lòng thử lại.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -312,7 +328,7 @@ function LoginModal() {
               )}
             </div>
           ) : (
-            // Admin Login Form
+            // Admin Login Form - UPDATED
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

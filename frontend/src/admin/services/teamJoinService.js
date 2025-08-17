@@ -1,63 +1,76 @@
-// frontend/src/admin/services/teamJoinService.js
+// admin/services/teamJoinService.js - Fixed Admin Service
 import API from '../../services/api';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('adminToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const TeamJoinService = {
-  // Lấy danh sách team join posts với filter và pagination
+  // Admin methods
   getPosts: async (params = {}) => {
     try {
-      const response = await API.get('/admin/team-joins', { params });
+      const response = await API.get('/team-joins/admin', { 
+        params,
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy danh sách posts' };
     }
   },
 
-  // Lấy chi tiết post
   getPostById: async (id) => {
     try {
-      const response = await API.get(`/admin/team-joins/${id}`);
+      const response = await API.get(`/team-joins/admin/${id}`, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy thông tin post' };
     }
   },
 
-  // Tạo post mới
   createPost: async (postData) => {
     try {
-      const response = await API.post('/admin/team-joins', postData);
+      const response = await API.post('/team-joins/admin', postData, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi tạo post' };
     }
   },
 
-  // Cập nhật post
   updatePost: async (id, postData) => {
     try {
-      const response = await API.put(`/admin/team-joins/${id}`, postData);
+      const response = await API.put(`/team-joins/admin/${id}`, postData, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi cập nhật post' };
     }
   },
 
-  // Xóa post
   deletePost: async (id) => {
     try {
-      const response = await API.delete(`/admin/team-joins/${id}`);
+      const response = await API.delete(`/team-joins/admin/${id}`, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi xóa post' };
     }
   },
 
-  // Cập nhật trạng thái hàng loạt
   bulkUpdateStatus: async (postIds, status) => {
     try {
-      const response = await API.post('/admin/team-joins/bulk-update', {
+      const response = await API.post('/team-joins/admin/bulk-update', {
         postIds,
         status
+      }, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -65,10 +78,11 @@ const TeamJoinService = {
     }
   },
 
-  // Lấy thống kê
   getStats: async () => {
     try {
-      const response = await API.get('/admin/team-joins/stats');
+      const response = await API.get('/team-joins/admin/stats', {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy thống kê' };

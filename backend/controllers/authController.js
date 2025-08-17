@@ -1,107 +1,336 @@
-// backend/controllers/authController.js
-const db = require('../config/db');
-const nodemailer = require('nodemailer');
+// backend/controllers/authController.js - FIXED VERSION
+const User = require('../models/User');
+const Otp = require('../models/Otp');
+const Admin = require('../models/Admin');
+const sendOtp = require('../utils/sendOtp');
+const crypto = require('crypto');
 
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000); // Tạo OTP ngẫu nhiên
-}
-
+// =============== CUSTOMER AUTHENTICATION ===============
 exports.sendOtp = async (req, res) => {
-  const { email, phone } = req.body;
-  const otpCode = generateOTP();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // OTP hết hạn sau 5 phút
+  try {
+    const { email, phone } = req.body;
+    
+    console.log('Send OTP request:', { email, phone });
+    
+    if (!email && !phone) {
+      return res.status(400).json({ error: 'Vui lòng nhập email hoặc số điện thoại' });
+    }
 
-  if (!email && !phone) {
-    return res.status(400).json({ error: 'Vui lòng nhập email hoặc số điện thoại' });
-  }
+    // Validate format
+    if (email && !sendOtp.isValidEmail(email)) {
+      return res.status(400).json({ error: 'Email không hợp lệ' });
+    }
+    
+    if (phone && !sendOtp.isValidPhone(phone)) {
+      return res.status(400).json({ error: 'Số điện thoại không hợp lệ' });
+    }
 
-  if (email) {
-    // Gửi OTP qua email
-    db.query(
-      'INSERT INTO otp_codes (email, otp_code, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp_code=?, expires_at=?',
-      [email, otpCode, expiresAt, otpCode, expiresAt],
-      async (err) => {
-        if (err) return res.status(500).json({ error: 'Lỗi ghi OTP', details: err });
-        try {
-          const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: process.env.MAIL_USER,
-              pass: process.env.MAIL_PASS
-            }
-          });
-
-          await transporter.sendMail({
-            from: process.env.MAIL_USER,
-            to: email,
-            subject: 'Mã xác thực OTP - TaZi FootballField',
-            html: `<p>Mã xác thực của bạn là: <b>${otpCode}</b>. Mã này có hiệu lực trong 5 phút.</p>`
-          });
-
-          res.status(200).json({ message: 'Đã gửi OTP đến email' });
-        } catch (mailErr) {
-          res.status(500).json({ error: 'Lỗi gửi email', details: mailErr });
-        }
-      }
-    );
-  } else if (phone) {
-    // Gửi OTP qua số điện thoại (giả lập gửi OTP về terminal cho test)
-    db.query(
-      'INSERT INTO otp_codes (phone_number, otp_code, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE otp_code=?, expires_at=?',
-      [phone, otpCode, expiresAt, otpCode, expiresAt],
-      (err) => {
-        if (err) return res.status(500).json({ error: 'Lỗi ghi OTP', details: err });
-
-        // Giả lập gửi OTP về số điện thoại (hiển thị trong terminal)
-        console.log(`Gửi OTP giả lập đến số điện thoại: ${phone} với mã: ${otpCode}`);
-        res.status(200).json({ message: 'Đã gửi OTP qua số điện thoại' });
-      }
-    );
-  }
-};
-
-
-
-// backend/controllers/authController.js
-exports.verifyOtp = (req, res) => {
-  const { email, phone, otp } = req.body;
-  if (!email && !phone) return res.status(400).json({ error: 'Vui lòng nhập email hoặc số điện thoại' });
-  if (!otp) return res.status(400).json({ error: 'Thiếu mã OTP' });
-
-  const condition = email ? `email = ?` : `phone_number = ?`;
-  const value = email ? email : phone;
-
-  db.query(
-    `SELECT * FROM otp_codes WHERE ${condition} AND otp_code = ? AND is_used = 0 AND expires_at > NOW()`,
-    [value, otp],
-    (err, results) => {
-      if (err || results.length === 0) return res.status(400).json({ error: 'OTP không hợp lệ hoặc đã hết hạn' });
-
-      db.query('UPDATE otp_codes SET is_used = 1 WHERE id = ?', [results[0].id], (err2) => {
-        if (err2) return res.status(500).json({ error: 'Lỗi xác thực OTP' });
-
-        // Tạo user nếu chưa có
-        db.query('SELECT * FROM users WHERE email = ? OR phone_number = ?', [email, phone], (err3, rows) => {
-          if (err3) return res.status(500).json({ error: 'Lỗi kiểm tra người dùng' });
-
-          let user = rows[0];
-          if (!user) {
-            const defaultName = 'Người dùng mới';
-            db.query(
-              'INSERT INTO users (email, phone_number, name) VALUES (?, ?, ?)',
-              [email, phone, defaultName],
-              (err4, result) => {
-                if (err4) return res.status(500).json({ error: 'Lỗi tạo tài khoản mới', details: err4 });
-                user = { id: result.insertId, email, phone, name: defaultName };
-              }
-            );
-          }
-
-          res.status(200).json({ message: 'Đăng nhập thành công', user });
-        });
+    const identifier = email || phone;
+    
+    // Check recent attempts to prevent spam
+    const recentAttempts = await Otp.getRecentAttempts(identifier, 5);
+    if (recentAttempts >= 3) {
+      return res.status(429).json({ 
+        error: 'Bạn đã gửi quá nhiều OTP. Vui lòng thử lại sau 5 phút.' 
       });
     }
-  );
+
+    const otpCode = sendOtp.generateOTP(6);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    console.log('Generated OTP:', otpCode, 'for', identifier);
+
+    // Save OTP to database
+    await Otp.create(identifier, otpCode, expiresAt);
+
+    // Send OTP
+    if (email) {
+      await sendOtp.sendEmail(email, otpCode);
+      res.json({ message: 'Đã gửi OTP đến email' });
+    } else {
+      await sendOtp.sendSMS(phone, otpCode);
+      res.json({ message: 'Đã gửi OTP qua số điện thoại' });
+    }
+    
+    console.log('OTP sent successfully to', identifier);
+  } catch (error) {
+    console.error('Send OTP error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi gửi OTP',
+      details: error.message 
+    });
+  }
 };
 
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { email, phone, otp } = req.body;
+    
+    console.log('Verify OTP request:', { email, phone, otp });
+    
+    if (!email && !phone || !otp) {
+      return res.status(400).json({ error: 'Thiếu thông tin xác thực' });
+    }
 
+    const identifier = email || phone;
+    
+    // Verify OTP
+    const isValidOtp = await Otp.verify(identifier, otp);
+    if (!isValidOtp) {
+      return res.status(400).json({ error: 'OTP không hợp lệ hoặc đã hết hạn' });
+    }
+
+    console.log('OTP verified successfully for', identifier);
+
+    // Find or create user
+    const user = await User.findOrCreate(email, phone);
+    
+    console.log('User found/created:', user.id);
+    
+    res.json({ 
+      message: 'Đăng nhập thành công', 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone_number: user.phone_number
+      }
+    });
+  } catch (error) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi xác thực OTP',
+      details: error.message 
+    });
+  }
+};
+
+// =============== USER PROFILE MANAGEMENT ===============
+exports.getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('Getting user profile for ID:', id);
+    
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi lấy thông tin người dùng',
+      details: error.message 
+    });
+  }
+};
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, phone_number } = req.body;
+
+    console.log('Updating user profile:', { id, name, email, phone_number });
+
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({ error: 'Tên phải có ít nhất 2 ký tự' });
+    }
+
+    // Validate email if provided
+    if (email && !sendOtp.isValidEmail(email)) {
+      return res.status(400).json({ error: 'Email không hợp lệ' });
+    }
+
+    // Validate phone if provided
+    if (phone_number && !sendOtp.isValidPhone(phone_number)) {
+      return res.status(400).json({ error: 'Số điện thoại không hợp lệ' });
+    }
+
+    await User.updateInfo(id, { name: name.trim(), email, phone_number });
+    
+    console.log('User profile updated successfully');
+    res.json({ message: 'Cập nhật thông tin thành công' });
+  } catch (error) {
+    console.error('Update user profile error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi cập nhật thông tin',
+      details: error.message 
+    });
+  }
+};
+
+// backend/controllers/authController.js - ADMIN SECTION ONLY (FIXED)
+// ... (keep other customer auth methods as they are)
+
+// =============== ADMIN AUTHENTICATION - FIXED ===============
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    console.log('Admin login attempt:', email);
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email và mật khẩu là bắt buộc' });
+    }
+
+    // Use callback version to match adminAuthController pattern
+    Admin.findByEmail(email, async (err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Lỗi máy chủ' });
+      }
+
+      if (results.length === 0) {
+        return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng' });
+      }
+
+      const admin = results[0];
+      console.log('Found admin:', admin);
+
+      try {
+        // Simple password check (in production, use bcrypt)
+        if (password !== admin.password) {
+          return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng' });
+        }
+
+        const sessionToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+        // Use callback version
+        Admin.saveSession(admin.id, sessionToken, expiresAt, (sessionErr) => {
+          if (sessionErr) {
+            console.error('Session error:', sessionErr);
+            return res.status(500).json({ error: 'Lỗi tạo phiên đăng nhập' });
+          }
+
+          // Update last login
+          Admin.updateLastLogin(admin.id, () => {});
+
+          console.log('Admin login successful for:', email);
+
+          res.json({
+            message: 'Đăng nhập thành công',
+            admin: {
+              id: admin.id,
+              email: admin.email,
+              name: admin.name,
+              role: admin.role,
+              permissions: JSON.parse(admin.permissions || '[]')
+            },
+            sessionToken,
+            expiresAt
+          });
+        });
+
+      } catch (error) {
+        console.error('Login processing error:', error);
+        res.status(500).json({ error: 'Lỗi xử lý đăng nhập' });
+      }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi xác thực',
+      details: error.message 
+    });
+  }
+};
+
+exports.adminLogout = async (req, res) => {
+  try {
+    const sessionToken = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!sessionToken) {
+      return res.status(400).json({ error: 'Không tìm thấy token' });
+    }
+
+    console.log('Admin logout request');
+
+    // Use callback version
+    Admin.removeSession(sessionToken, (err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Lỗi đăng xuất' });
+      }
+      res.json({ message: 'Đăng xuất thành công' });
+    });
+  } catch (error) {
+    console.error('Admin logout error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi đăng xuất',
+      details: error.message 
+    });
+  }
+};
+
+exports.verifyAdminSession = async (req, res) => {
+  try {
+    const sessionToken = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!sessionToken) {
+      return res.status(401).json({ error: 'Thiếu token xác thực' });
+    }
+
+    // Use callback version
+    Admin.findSession(sessionToken, (err, results) => {
+      if (err || results.length === 0) {
+        console.error('Session verify error:', err);
+        return res.status(401).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
+      }
+
+      const session = results[0];
+      res.json({
+        admin: {
+          id: session.admin_id,
+          email: session.email,
+          name: session.name,
+          role: session.role,
+          permissions: JSON.parse(session.permissions || '[]')
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Verify admin session error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi xác thực session',
+      details: error.message 
+    });
+  }
+};
+
+exports.changeAdminPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const adminId = req.admin.id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Thiếu mật khẩu hiện tại hoặc mật khẩu mới' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+    }
+
+    const admin = await Admin.findById(adminId);
+    if (!admin) {
+      return res.status(404).json({ error: 'Không tìm thấy admin' });
+    }
+
+    if (currentPassword !== admin.password) {
+      return res.status(401).json({ error: 'Mật khẩu hiện tại không đúng' });
+    }
+
+    await Admin.updatePassword(adminId, newPassword);
+    
+    console.log('Admin password changed successfully');
+    res.json({ message: 'Đổi mật khẩu thành công' });
+  } catch (error) {
+    console.error('Change admin password error:', error);
+    res.status(500).json({ 
+      error: 'Lỗi cập nhật mật khẩu',
+      details: error.message 
+    });
+  }
+};

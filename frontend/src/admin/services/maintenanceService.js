@@ -1,13 +1,18 @@
-// frontend/src/admin/services/maintenanceService.js
+// admin/services/maintenanceService.js - Fixed Admin Service
 import API from '../../services/api';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('adminToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const maintenanceService = {
-  // Lấy danh sách bảo trì với filter và phân trang
+  // Admin methods
   getAllMaintenances: async (params = {}) => {
     try {
-      const response = await API.get('/admin/maintenance', { 
+      const response = await API.get('/maintenance/admin', { 
         params,
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -15,11 +20,10 @@ const maintenanceService = {
     }
   },
 
-  // Lấy thống kê bảo trì
   getMaintenanceStats: async () => {
     try {
-      const response = await API.get('/admin/maintenance/stats', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      const response = await API.get('/maintenance/admin/stats', {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -27,11 +31,10 @@ const maintenanceService = {
     }
   },
 
-  // Lấy chi tiết bảo trì
   getMaintenanceById: async (id) => {
     try {
-      const response = await API.get(`/admin/maintenance/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      const response = await API.get(`/maintenance/admin/${id}`, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -39,11 +42,10 @@ const maintenanceService = {
     }
   },
 
-  // Tạo lịch bảo trì mới
   createMaintenance: async (data) => {
     try {
-      const response = await API.post('/admin/maintenance', data, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      const response = await API.post('/maintenance/admin', data, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -51,11 +53,10 @@ const maintenanceService = {
     }
   },
 
-  // Cập nhật lịch bảo trì
   updateMaintenance: async (id, data) => {
     try {
-      const response = await API.put(`/admin/maintenance/${id}`, data, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      const response = await API.put(`/maintenance/admin/${id}`, data, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -63,11 +64,10 @@ const maintenanceService = {
     }
   },
 
-  // Xóa lịch bảo trì
   deleteMaintenance: async (id) => {
     try {
-      const response = await API.delete(`/admin/maintenance/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      const response = await API.delete(`/maintenance/admin/${id}`, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -75,19 +75,37 @@ const maintenanceService = {
     }
   },
 
-  // Tạo lịch nghỉ lễ cho nhiều sân
   createHolidayMaintenance: async (data) => {
     try {
-      const response = await API.post('/admin/maintenance', {
+      const response = await API.post('/maintenance/admin', {
         ...data,
         type: 'holiday',
         field_id: 'all-fields'
       }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi tạo lịch nghỉ lễ' };
+    }
+  },
+
+  // Customer methods (for reference)
+  getMaintenanceSchedule: async (params = {}) => {
+    try {
+      const response = await API.get('/maintenance/schedule', { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Lỗi lấy lịch bảo trì' };
+    }
+  },
+
+  getActiveMaintenances: async () => {
+    try {
+      const response = await API.get('/maintenance/active');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { error: 'Lỗi lấy bảo trì đang hoạt động' };
     }
   }
 };
@@ -102,5 +120,7 @@ export const {
   createMaintenance,
   updateMaintenance,
   deleteMaintenance,
-  createHolidayMaintenance
+  createHolidayMaintenance,
+  getMaintenanceSchedule,
+  getActiveMaintenances
 } = maintenanceService;

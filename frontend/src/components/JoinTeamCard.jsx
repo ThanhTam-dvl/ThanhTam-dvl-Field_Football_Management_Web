@@ -44,8 +44,26 @@ function JoinTeamCard({ post, onContact, index = 0 }) {
     return colorMap[type] || 'from-purple-500 to-purple-600';
   };
 
-  const getFieldTypeShort = (type) => {
-    return type?.replace('vs', '') || '5';
+  // FIXED: Get the correct field type number
+  const getFieldTypeNumber = (type) => {
+    if (!type) return '5';
+    
+    // Extract number from field type (5vs5 -> 5, 7vs7 -> 7, 11vs11 -> 11)
+    const match = type.match(/^(\d+)vs\d+$/);
+    return match ? match[1] : '5';
+  };
+
+  // FIXED: Get the proper field display name
+  const getFieldDisplayName = (type) => {
+    if (!type) return 'Sân 5v5';
+    
+    const typeMap = {
+      '5vs5': 'Sân 5v5',
+      '7vs7': 'Sân 7v7', 
+      '11vs11': 'Sân 11v11'
+    };
+    
+    return typeMap[type] || 'Sân 5v5';
   };
 
   return (
@@ -59,11 +77,11 @@ function JoinTeamCard({ post, onContact, index = 0 }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-white/20 rounded-md flex items-center justify-center">
-                <span className="text-white text-xs font-bold">{getFieldTypeShort(post.field_type)}</span>
+                <span className="text-white text-xs font-bold">{getFieldTypeNumber(post.field_type)}</span>
               </div>
               <div>
                 <span className="text-white font-medium text-sm">
-                  Sân {getFieldTypeShort(post.field_type)}v{getFieldTypeShort(post.field_type)}
+                  {getFieldDisplayName(post.field_type)}
                 </span>
               </div>
             </div>
@@ -139,7 +157,7 @@ function JoinTeamCard({ post, onContact, index = 0 }) {
           <div className="flex items-center gap-2">
             <button className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2 px-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center space-x-1 text-xs">
               <i className="fas fa-hand-paper text-xs"></i>
-              <span>Xin đá kẻ</span>
+              <span>Xin đá kèm</span>
             </button>
 
             <button

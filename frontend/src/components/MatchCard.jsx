@@ -40,8 +40,26 @@ function MatchCard({ match, onContact, index = 0 }) {
     return colorMap[type] || 'from-blue-500 to-blue-600';
   };
 
-  const getFieldTypeShort = (type) => {
-    return type?.replace('vs', '') || '5';
+  // FIXED: Get the correct field type number
+  const getFieldTypeNumber = (type) => {
+    if (!type) return '5';
+    
+    // Extract number from field type (5vs5 -> 5, 7vs7 -> 7, 11vs11 -> 11)
+    const match = type.match(/^(\d+)vs\d+$/);
+    return match ? match[1] : '5';
+  };
+
+  // FIXED: Get the proper field display name
+  const getFieldDisplayName = (type) => {
+    if (!type) return 'Sân 5v5';
+    
+    const typeMap = {
+      '5vs5': 'Sân 5v5',
+      '7vs7': 'Sân 7v7', 
+      '11vs11': 'Sân 11v11'
+    };
+    
+    return typeMap[type] || 'Sân 5v5';
   };
 
   const ageText = match.age_min && match.age_max ? `${match.age_min}-${match.age_max}` : 'Tất cả';
@@ -62,11 +80,11 @@ function MatchCard({ match, onContact, index = 0 }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-white/20 rounded-md flex items-center justify-center">
-                <span className="text-white text-xs font-bold">{getFieldTypeShort(match.field_type)}</span>
+                <span className="text-white text-xs font-bold">{getFieldTypeNumber(match.field_type)}</span>
               </div>
               <div>
                 <span className="text-white font-medium text-sm">
-                  Sân {getFieldTypeShort(match.field_type)}v{getFieldTypeShort(match.field_type)}
+                  {getFieldDisplayName(match.field_type)}
                 </span>
               </div>
             </div>

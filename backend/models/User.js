@@ -1,83 +1,126 @@
-// // backend/models/User.js
-// const db = require('../config/db');
-
-// const User = {
-//   findByPhone: (phone, callback) => {
-//     const sql = `SELECT * FROM users WHERE phone_number = ?`;
-//     db.query(sql, [phone], callback);
-//   },
-
-//   createIfNotExist: (phone, callback) => {
-//     const check = `SELECT * FROM users WHERE phone_number = ?`;
-//     db.query(check, [phone], (err, result) => {
-//       if (err) return callback(err);
-//       if (result.length > 0) return callback(null, result[0]);
-
-//       const insert = `INSERT INTO users (phone_number, name) VALUES (?, 'Người dùng mới')`;
-//       db.query(insert, [phone], (err2, result2) => {
-//         if (err2) return callback(err2);
-//         User.findByPhone(phone, callback);
-//       });
-//     });
-//   }
-// };
-
-// module.exports = User;
-
-
-// backend/models/User.js
+// backend/models/User.js - Model hoàn chỉnh
 const db = require('../config/db');
 
 const User = {
-  findById: (id, callback) => {
-    const sql = `SELECT id, phone_number, name, email, role, is_active, total_bookings, cancelled_bookings FROM users WHERE id = ?`;
-    db.query(sql, [id], callback);
+  // =============== BASIC CRUD ===============
+  findById: async (id) => {
+    const [results] = await db.promise().query(
+      `SELECT id, phone_number, name, email, role, is_active, total_bookings, cancelled_bookings, created_at FROM users WHERE id = ?`,
+      [id]
+    );
+    return results[0] || null;
   },
 
-  updateInfo: (id, data, callback) => {
-    const sql = `
-      UPDATE users SET name = ?, email = ?, phone_number = ? WHERE id = ?`;
-    const values = [data.name, data.email, data.phone_number, id];
-    db.query(sql, values, callback);
+  findByEmail: async (email) => {
+    const [results] = await db.promise().query(
+      `SELECT * FROM users WHERE email = ?`,
+      [email]
+    );
+    return results[0] || null;
   },
 
-
-  findAll: (callback) => {
-    const sql = `SELECT id, phone_number, name, role, total_bookings FROM users WHERE is_active = 1`;
-    db.query(sql, callback);
+  findByPhone: async (phone) => {
+    const [results] = await db.promise().query(
+      `SELECT * FROM users WHERE phone_number = ?`,
+      [phone]
+    );
+    return results[0] || null;
   },
 
-  softDelete: (id, callback) => {
-    const sql = `UPDATE users SET is_active = 0 WHERE id = ?`;
-    db.query(sql, [id], callback);
+  create: async (userData) => {
+    const { name, phone_number, email, role = 'customer' } = userData;
+    const [result] = await db.promise().query(
+      `INSERT INTO users (name, phone_number, email, role, created_at) VALUES (?, ?, ?, ?, NOW())`,
+      [name, phone_number, email, role]
+    );
+    return result.insertId;
   },
 
-  createIfNotExist: (phone, callback) => {
-    const check = `SELECT * FROM users WHERE phone_number = ?`;
-    db.query(check, [phone], (err, result) => {
-      if (err) return callback(err);
-      if (result.length > 0) return callback(null, result[0]);
+  update: async (id, updateData) => {
+    const fields = [];
+    const values = [];
 
-      const insert = `INSERT INTO users (phone_number, name) VALUES (?, 'Người dùng mới')`;
-      db.query(insert, [phone], (err2, result2) => {
-        if (err2) return callback(err2);
-        // Lấy lại user vừa tạo (có id)
-        db.query(check, [phone], (err3, result3) => {
-          if (err3) return callback(err3);
-          callback(null, result3[0]);
-        });
-      });
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] !== undefined) {
+        fields.push(`${key} = ?`);
+        values.push(updateData[key]);
+      }
     });
+
+    if (fields.length === 0) return { affectedRows: 0 };
+
+    values.push(id);
+    const [result] = await db.promise().query(
+      `UPDATE users SET ${fields.join(', ')}, updated_at = NOW() WHERE id = ?`,
+      values
+    );
+    return result;
   },
 
-  
-  // backend/models/User.js - Bổ sung methods
+  softDelete: async (id) => {
+    const [result] = await db.promise().query(
+      `UPDATE users SET is_active = 0, updated_at = NOW() WHERE id = ?`,
+      [id]
+    );
+    return result;
+  },
 
-// Thêm vào cuối file User.js trước module.exports:
+  // =============== AUTH RELATED ===============
+  findOrCreate: async (email, phone) => {
+    // Tìm user hiện có
+    let user = null;
+    if (email) {
+      user = await User.findByEmail(email);
+    }
+    if (!user && phone) {
+      user = await User.findByPhone(phone);
+    }
 
-  // Tìm khách hàng với thống kê booking
-  findByIdWithStats: async (id, callback) => {
-    const sql = `
+    // Nếu đã có user, return
+    if (user) {
+      return user;
+    }
+
+    // Tạo user mới
+    const userId = await User.create({
+      name: 'Người dùng mới',
+      phone_number: phone,
+      email: email,
+      role: 'customer'
+    });
+
+    return await User.findById(userId);
+  },
+
+  findOrCreateByPhone: async (phone, name = 'Người dùng mới') => {
+    let user = await User.findByPhone(phone);
+    
+    if (user) {
+      // Cập nhật tên nếu khác
+      if (name && name !== user.name) {
+        await User.update(user.id, { name });
+        user.name = name;
+      }
+      return user;
+    }
+
+    // Tạo user mới
+    const userId = await User.create({
+      name,
+      phone_number: phone,
+      role: 'customer'
+    });
+
+    return await User.findById(userId);
+  },
+
+  updateInfo: async (id, data) => {
+    return await User.update(id, data);
+  },
+
+  // =============== CUSTOMER MANAGEMENT ===============
+  getCustomerDetail: async (customerId) => {
+    const [results] = await db.promise().query(`
       SELECT 
         u.*,
         COALESCE(booking_stats.completed_bookings, 0) as completed_bookings,
@@ -95,24 +138,93 @@ const User = {
         GROUP BY user_id
       ) booking_stats ON u.id = booking_stats.user_id
       WHERE u.id = ?
-    `;
-    db.query(sql, [id, id], callback);
+    `, [customerId, customerId]);
+
+    return results[0] || null;
   },
 
-  // Cập nhật trạng thái active
-  updateStatus: (id, isActive, callback) => {
-    const sql = `UPDATE users SET is_active = ?, updated_at = NOW() WHERE id = ?`;
-    db.query(sql, [isActive, id], callback);
+  bulkUpdate: async (customerIds, action) => {
+    if (!customerIds || customerIds.length === 0) {
+      return { affectedRows: 0 };
+    }
+
+    let query = '';
+    let newStatus = null;
+
+    switch (action) {
+      case 'activate':
+        newStatus = 1;
+        query = 'UPDATE users SET is_active = 1, updated_at = NOW() WHERE id IN (?)';
+        break;
+      case 'deactivate':
+      case 'delete':
+        newStatus = 0;
+        query = 'UPDATE users SET is_active = 0, updated_at = NOW() WHERE id IN (?)';
+        break;
+      default:
+        throw new Error('Hành động không hợp lệ');
+    }
+
+    const [result] = await db.promise().query(query, [customerIds]);
+    return result;
   },
 
-  // Kiểm tra tồn tại của phone (trừ user hiện tại)
-  checkPhoneDuplicate: (phone, excludeId, callback) => {
-    const sql = `SELECT id FROM users WHERE phone_number = ? AND id != ?`;
-    db.query(sql, [phone, excludeId], callback);
+  // =============== LEGACY CALLBACK METHODS (để tương thích với code cũ) ===============
+  findById: (id, callback) => {
+    if (callback) {
+      const sql = `SELECT id, phone_number, name, email, role, is_active, total_bookings, cancelled_bookings FROM users WHERE id = ?`;
+      db.query(sql, [id], callback);
+      return;
+    }
+    
+    // Promise version
+    return User.findById(id);
+  },
+
+  updateInfo: (id, data, callback) => {
+    if (callback) {
+      const sql = `UPDATE users SET name = ?, email = ?, phone_number = ?, updated_at = NOW() WHERE id = ?`;
+      const values = [data.name, data.email, data.phone_number, id];
+      db.query(sql, values, callback);
+      return;
+    }
+    
+    // Promise version
+    return User.updateInfo(id, data);
+  },
+
+  findAll: (callback) => {
+    const sql = `SELECT id, phone_number, name, role, total_bookings FROM users WHERE is_active = 1`;
+    db.query(sql, callback);
+  },
+
+  softDelete: (id, callback) => {
+    if (callback) {
+      const sql = `UPDATE users SET is_active = 0 WHERE id = ?`;
+      db.query(sql, [id], callback);
+      return;
+    }
+    
+    // Promise version
+    return User.softDelete(id);
+  },
+
+  createIfNotExist: (phone, callback) => {
+    const check = `SELECT * FROM users WHERE phone_number = ?`;
+    db.query(check, [phone], (err, result) => {
+      if (err) return callback(err);
+      if (result.length > 0) return callback(null, result[0]);
+
+      const insert = `INSERT INTO users (phone_number, name) VALUES (?, 'Người dùng mới')`;
+      db.query(insert, [phone], (err2, result2) => {
+        if (err2) return callback(err2);
+        db.query(check, [phone], (err3, result3) => {
+          if (err3) return callback(err3);
+          callback(null, result3[0]);
+        });
+      });
+    });
   }
 };
-
-
-
 
 module.exports = User;

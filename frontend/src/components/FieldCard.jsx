@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 
 function FieldCard({ field, searchInfo, onBook, index = 0 }) {
   const [isVisible, setIsVisible] = useState(false);
-  const slot = (field.slots ?? [])[0];
+  
+  // Fix: Handle both slots and available_slots
+  const slots = field.available_slots || field.slots || [];
+  const slot = slots[0];
 
   // Animation trigger
   useEffect(() => {
@@ -10,25 +13,51 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
     return () => clearTimeout(timer);
   }, [index]);
 
-  // Nếu không có slot phù hợp, không hiển thị card
-  if (!slot) return null;
+  // Debug log
+  console.log('FieldCard rendering:', { 
+    fieldName: field.name, 
+    hasSlots: !!slot,
+    slotsLength: slots.length,
+    field 
+  });
+
+  // If no available slots, don't show card
+  if (!slot) {
+    console.log('No slot available for field:', field.name);
+    return null;
+  }
 
   const getFieldTypeColor = (type) => {
     const colorMap = {
       '5vs5': 'from-blue-500 to-blue-600',
-      '7vs7': 'from-purple-500 to-purple-600',
+      '7vs7': 'from-purple-500 to-purple-600', 
       '11vs11': 'from-green-500 to-green-600'
     };
     return colorMap[type] || 'from-green-500 to-green-600';
   };
 
   const formatPrice = (price) => {
+    if (!price || price === 0) return '0';
     return new Intl.NumberFormat('vi-VN').format(price);
   };
 
-  const getFieldTypeShort = (type) => {
-    return type.replace('vs', '');
+  // FIXED: Get the correct field type number
+  const getFieldTypeNumber = (type) => {
+    if (!type) return '5';
+    
+    // Extract number from field type (5vs5 -> 5, 7vs7 -> 7, 11vs11 -> 11)
+    const match = type.match(/^(\d+)vs\d+$/);
+    return match ? match[1] : '5';
   };
+
+  const getDuration = () => {
+    if (!searchInfo?.startTime || !searchInfo?.endTime) return 1;
+    const start = parseInt(searchInfo.startTime.split(':')[0]);
+    const end = parseInt(searchInfo.endTime.split(':')[0]);
+    return end - start;
+  };
+
+  const totalPrice = slot.price * getDuration();
 
   return (
     <div className={`transition-all duration-500 hover-lift ${
@@ -41,11 +70,11 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-6 h-6 bg-white/20 rounded-md flex items-center justify-center">
-                <span className="text-white text-xs font-bold">{getFieldTypeShort(field.type)}</span>
+                <span className="text-white text-xs font-bold">{getFieldTypeNumber(field.type)}</span>
               </div>
               <div>
                 <h3 className="text-white font-semibold text-sm leading-tight">
-                  {field.name}
+                  {field.name || 'Sân bóng'}
                 </h3>
               </div>
             </div>
@@ -65,7 +94,7 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
               <div className="flex items-center space-x-2">
                 <i className="fas fa-clock text-green-600 dark:text-green-400 text-xs"></i>
                 <span className="font-medium text-green-800 dark:text-green-200 text-sm">
-                  {slot.label}
+                  {slot.label || `${searchInfo?.startTime || ''} - ${searchInfo?.endTime || ''}`}
                 </span>
               </div>
               
@@ -80,22 +109,22 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
             </div>
           </div>
 
-          {/* Location - Minimal */}
+          {/* Location & Duration Info */}
           <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <i className="fas fa-map-marker-alt text-gray-400"></i>
               <span>Khu vực trung tâm</span>
             </div>
-            <span className="text-gray-500">Tiêu chuẩn</span>
+            <span className="text-gray-500">{getDuration()}h</span>
           </div>
         </div>
 
         {/* Footer - Minimal */}
         <div className="px-3 pb-3">
           <div className="flex items-center justify-between">
-            <div className="text-right">
+            <div className="text-left">
               <div className="font-bold text-gray-900 dark:text-gray-100 text-sm">
-                {formatPrice(slot.price)}đ
+                {formatPrice(totalPrice)}đ
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 Tổng tiền

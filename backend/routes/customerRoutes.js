@@ -1,10 +1,10 @@
-// ====== backend/routes/admin/customerRoutes.js ======
+// backend/routes/customerRoutes.js - Customer Management (Admin only)
 const express = require('express');
 const router = express.Router();
-const customerController = require('../../controllers/admin/customerController');
-const { requireAuth, requirePermission } = require('../../middleware/adminAuth');
+const customerController = require('../controllers/customerController');
+const { requireAuth, requirePermission } = require('../middleware/adminAuth');
 
-// Customer management routes
+// =============== ADMIN CUSTOMER MANAGEMENT ROUTES ===============
 router.get('/', requireAuth, requirePermission('users'), customerController.getCustomers);
 router.get('/stats', requireAuth, requirePermission('users'), customerController.getCustomerStats);
 router.get('/:customerId', requireAuth, requirePermission('users'), customerController.getCustomerById);

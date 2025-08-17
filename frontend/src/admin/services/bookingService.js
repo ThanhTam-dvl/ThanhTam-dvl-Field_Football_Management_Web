@@ -1,36 +1,39 @@
-// ====== 1. FIX: frontend/src/admin/services/bookingService.js ======
+// admin/services/bookingService.js - Fixed Admin Service
 import BaseService from './baseService';
 
 class BookingService extends BaseService {
   constructor() {
-    super('/admin/bookings');
+    super(''); // No base prefix since we handle it manually
   }
 
   async getAllBookings(params = {}) {
-    return this.get('/', params);
+    return this.get('/bookings/admin', params);
+  }
+
+  async getRecentBookings(limit = 10) {
+    return this.get('/bookings/admin/recent', { limit });
   }
 
   async updateBookingStatus(bookingId, status, notes = '') {
-    return this.put(`/${bookingId}/status`, { status, notes });
+    return this.put(`/bookings/admin/${bookingId}/status`, { status, notes });
   }
 
   async updateBooking(bookingId, bookingData) {
-    return this.put(`/${bookingId}`, bookingData);
+    return this.put(`/bookings/admin/${bookingId}`, bookingData);
   }
 
   async deleteBooking(bookingId) {
-    return this.delete(`/${bookingId}`);
+    return this.delete(`/bookings/admin/${bookingId}`);
   }
 
   async createManualBooking(bookingData) {
-    return this.post('/manual', bookingData);
+    return this.post('/bookings/admin/manual', bookingData);
   }
 
-  // FIX: Add getFields method properly
+  // Get fields for booking creation
   async getFields() {
     try {
-      // Use the admin/fields endpoint directly
-      const response = await this.request('GET', '/admin/fields');
+      const response = await this.get('/fields/admin');
       return response;
     } catch (error) {
       console.error('Error getting fields:', error);
@@ -40,4 +43,3 @@ class BookingService extends BaseService {
 }
 
 export default new BookingService();
-

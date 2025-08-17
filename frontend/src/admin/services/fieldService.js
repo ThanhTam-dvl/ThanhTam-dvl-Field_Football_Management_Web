@@ -1,47 +1,42 @@
-// ====== frontend/src/admin/services/fieldService.js (UPDATED) ======
+// admin/services/fieldService.js - Fixed Admin Service
 import BaseService from './baseService';
 
 class FieldService extends BaseService {
   constructor() {
-    super('/admin/fields');
+    super(''); // No base prefix
   }
 
   async getAllFields() {
-    return this.get('/');
+    return this.get('/fields/admin');
   }
 
   async getFieldsWithBookings(date) {
-    return this.get('/with-bookings', { date });
+    return this.get('/fields/admin/with-bookings', { date });
+  }
+
+  async getFieldStats() {
+    return this.get('/fields/admin/stats');
   }
 
   async createField(fieldData) {
-    return this.post('/', fieldData);
+    return this.post('/fields/admin', fieldData);
   }
 
   async updateField(fieldId, fieldData) {
-    return this.put(`/${fieldId}`, fieldData);
+    return this.put(`/fields/admin/${fieldId}`, fieldData);
   }
 
   async deleteField(fieldId) {
-    return this.delete(`/${fieldId}`);
+    return this.delete(`/fields/admin/${fieldId}`);
   }
 
-  // Field booking operations
-  async getFieldBookings(fieldId, date) {
-    return this.get(`/${fieldId}/bookings`, { date });
+  // Customer field methods (for reference)
+  async getAvailableFields(params) {
+    return this.get('/fields/available', params);
   }
 
-  // Maintenance operations
-  async createMaintenance(fieldId, maintenanceData) {
-    return this.post(`/${fieldId}/maintenance`, maintenanceData);
-  }
-
-  async updateMaintenance(maintenanceId, maintenanceData) {
-    return this.put(`/maintenance/${maintenanceId}`, maintenanceData);
-  }
-
-  async deleteMaintenance(maintenanceId) {
-    return this.delete(`/maintenance/${maintenanceId}`);
+  async getAllPublicFields() {
+    return this.get('/fields');
   }
 }
 

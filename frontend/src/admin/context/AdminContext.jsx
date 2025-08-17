@@ -1,4 +1,4 @@
-// frontend/src/admin/context/AdminContext.jsx
+// frontend/src/admin/context/AdminContext.jsx - FIXED ENDPOINTS
 import { createContext, useContext, useState, useEffect } from 'react';
 import API from '../../services/api';
 
@@ -19,13 +19,19 @@ export const AdminProvider = ({ children }) => {
 
   const verifySession = async (token) => {
     try {
-      const response = await API.get('/admin/auth/verify', {
+      console.log('Verifying admin session...');
+      
+      // FIX: Use correct endpoint
+      const response = await API.get('/auth/admin/verify', {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Session verification successful:', response.data);
       setAdmin(response.data.admin);
     } catch (error) {
       console.error('Session verification failed:', error);
       localStorage.removeItem('adminToken');
+      setAdmin(null);
     } finally {
       setLoading(false);
     }
@@ -34,10 +40,15 @@ export const AdminProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await API.post('/admin/auth/login', {
+      console.log('Attempting admin login with:', { email, password });
+      
+      // FIX: Use correct endpoint
+      const response = await API.post('/auth/admin/login', {
         email,
         password
       });
+      
+      console.log('Admin login response:', response.data);
       
       const { admin, sessionToken } = response.data;
       setAdmin(admin);
@@ -45,6 +56,7 @@ export const AdminProvider = ({ children }) => {
       
       return { success: true, admin };
     } catch (error) {
+      console.error('Admin login error:', error);
       return { 
         success: false, 
         error: error.response?.data?.error || 'Lỗi đăng nhập' 
@@ -58,7 +70,10 @@ export const AdminProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('adminToken');
       if (token) {
-        await API.post('/admin/auth/logout', {}, {
+        console.log('Logging out admin...');
+        
+        // FIX: Use correct endpoint
+        await API.post('/auth/admin/logout', {}, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

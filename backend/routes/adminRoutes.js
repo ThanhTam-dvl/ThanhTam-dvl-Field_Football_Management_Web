@@ -1,15 +1,35 @@
-// ====== backend/routes/adminRoutes.js (Updated Main File) ======
+// ====== backend/routes/adminRoutes.js (Fixed Main File) ======
 const express = require('express');
 const router = express.Router();
-const adminRoutes = require('./admin');
 const adminAuthController = require('../controllers/adminAuthController');
 const { requireAuth, requireSuperAdmin } = require('../middleware/adminAuth');
 
-// Mount all admin sub-routes
-router.use('/', adminRoutes);
+// Import các routes admin cần thiết
+const dashboardRoutes = require('./dashboardRoutes');
+const bookingRoutes = require('./bookingRoutes');
+const fieldRoutes = require('./fieldRoutes');
+const customerRoutes = require('./customerRoutes');
+const matchRoutes = require('./matchRoutes');
+const teamJoinRoutes = require('./teamJoinRoutes');
+const serviceRoutes = require('./serviceRoutes');
+const maintenanceRoutes = require('./maintenanceRoutes');
+const inventoryRoutes = require('./inventoryRoutes');
+const revenueRoutes = require('./revenueRoutes');
+
+// Mount admin sub-routes với prefix
+router.use('/dashboard', dashboardRoutes);
+router.use('/bookings', bookingRoutes);
+router.use('/fields', fieldRoutes);
+router.use('/customers', customerRoutes);
+router.use('/matches', matchRoutes);
+router.use('/team-joins', teamJoinRoutes);
+router.use('/services', serviceRoutes);
+router.use('/maintenance', maintenanceRoutes);
+router.use('/inventory', inventoryRoutes);
+router.use('/revenue', revenueRoutes);
 
 // Legacy user management routes (keep for backward compatibility)
-router.get('/users', requireAuth, require('../controllers/admin/customerController').getCustomers);
+router.get('/users', requireAuth, require('../controllers/customerController').getCustomers);
 
 // Admin management routes (chỉ super admin)
 router.get('/admins', requireAuth, requireSuperAdmin, (req, res) => {

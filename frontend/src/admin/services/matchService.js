@@ -1,63 +1,76 @@
-// frontend/src/admin/services/matchService.js
+// admin/services/matchService.js - Fixed Admin Service
 import API from '../../services/api';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('adminToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const MatchService = {
-  // Lấy danh sách matches với filter và pagination
+  // Admin methods
   getMatches: async (params = {}) => {
     try {
-      const response = await API.get('/admin/matches', { params });
+      const response = await API.get('/matches/admin', { 
+        params,
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy danh sách matches' };
     }
   },
 
-  // Lấy chi tiết match
   getMatchById: async (id) => {
     try {
-      const response = await API.get(`/admin/matches/${id}`);
+      const response = await API.get(`/matches/admin/${id}`, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy thông tin match' };
     }
   },
 
-  // Tạo match mới
   createMatch: async (matchData) => {
     try {
-      const response = await API.post('/admin/matches', matchData);
+      const response = await API.post('/matches/admin', matchData, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi tạo match' };
     }
   },
 
-  // Cập nhật match
   updateMatch: async (id, matchData) => {
     try {
-      const response = await API.put(`/admin/matches/${id}`, matchData);
+      const response = await API.put(`/matches/admin/${id}`, matchData, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi cập nhật match' };
     }
   },
 
-  // Xóa match
   deleteMatch: async (id) => {
     try {
-      const response = await API.delete(`/admin/matches/${id}`);
+      const response = await API.delete(`/matches/admin/${id}`, {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi xóa match' };
     }
   },
 
-  // Cập nhật trạng thái hàng loạt
   bulkUpdateStatus: async (matchIds, status) => {
     try {
-      const response = await API.post('/admin/matches/bulk-update', {
+      const response = await API.post('/matches/admin/bulk-update', {
         matchIds,
         status
+      }, {
+        headers: getAuthHeaders()
       });
       return response.data;
     } catch (error) {
@@ -65,10 +78,11 @@ const MatchService = {
     }
   },
 
-  // Lấy thống kê
   getStats: async () => {
     try {
-      const response = await API.get('/admin/matches/stats');
+      const response = await API.get('/matches/admin/stats', {
+        headers: getAuthHeaders()
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Lỗi lấy thống kê' };

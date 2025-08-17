@@ -32,7 +32,7 @@ const AdminLayout = () => {
   const handleLogout = async () => {
     if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
       await logout();
-      navigate('/admin/login');
+      navigate('/');
     }
   };
 
