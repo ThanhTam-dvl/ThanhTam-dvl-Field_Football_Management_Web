@@ -111,9 +111,7 @@ function JoinTeamCard({ post, onContact, index = 0 }) {
                 <div className="font-medium text-purple-700 dark:text-purple-300 text-sm">
                   {formatTime()}
                 </div>
-                <div className="text-xs text-purple-600 dark:text-purple-400">
-                  Giờ đá
-                </div>
+                
               </div>
             </div>
           </div>
@@ -155,17 +153,14 @@ function JoinTeamCard({ post, onContact, index = 0 }) {
         {/* Footer */}
         <div className="px-3 pb-3">
           <div className="flex items-center gap-2">
-            <button className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2 px-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center space-x-1 text-xs">
-              <i className="fas fa-hand-paper text-xs"></i>
-              <span>Xin đá kèm</span>
-            </button>
+            
 
             <button
               onClick={() => onContact({ name: post.contact_name, phone: post.contact_phone })}
               className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-2 px-3 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md flex items-center justify-center space-x-1 text-xs"
             >
               <i className="fas fa-phone text-xs"></i>
-              <span>Liên hệ</span>
+              <span>Xin đá ké</span>
             </button>
           </div>
         </div>

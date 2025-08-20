@@ -1,7 +1,28 @@
-// backend/controllers/bookingController.js - ADD getRecentBookings method
+// backend/controllers/bookingController.js - FIXED formatDuration error
 const db = require('../config/db');
 const Booking = require('../models/Booking');
 const Field = require('../models/Field');
+
+// Helper function to format duration (moved from model to controller)
+const formatDuration = (startTime, endTime) => {
+  if (!startTime || !endTime) return '1h';
+  
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [endHour, endMinute] = endTime.split(':').map(Number);
+  
+  const startTotalMinutes = startHour * 60 + startMinute;
+  const endTotalMinutes = endHour * 60 + endMinute;
+  const durationMinutes = endTotalMinutes - startTotalMinutes;
+  
+  const hours = Math.floor(durationMinutes / 60);
+  const minutes = durationMinutes % 60;
+  
+  if (minutes === 0) {
+    return `${hours}h`;
+  } else {
+    return `${hours}h${minutes}p`;
+  }
+};
 
 // =============== CUSTOMER BOOKING APIs ===============
 exports.createBooking = async (req, res) => {
@@ -12,18 +33,44 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Thiếu thông tin đặt sân' });
     }
 
+    // Validate time range
+    if (!Booking.validateTimeRange || !Booking.validateTimeRange(data.start_time, data.end_time)) {
+      const [startHour, startMinute] = data.start_time.split(':').map(Number);
+      const [endHour, endMinute] = data.end_time.split(':').map(Number);
+      const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+      
+      if (durationMinutes < 30 || durationMinutes > 180) {
+        return res.status(400).json({ error: 'Thời gian đặt sân không hợp lệ (tối thiểu 30 phút, tối đa 3 giờ)' });
+      }
+    }
+
     const field = await Field.findById(data.field_id);
     if (!field) {
       return res.status(400).json({ error: 'Không tìm thấy sân' });
     }
 
+    // Check for time conflicts
+    const hasConflict = await Booking.checkTimeConflict(
+      data.field_id, 
+      data.booking_date, 
+      data.start_time, 
+      data.end_time
+    );
+    
+    if (hasConflict) {
+      return res.status(400).json({ error: 'Khung giờ này đã có người đặt' });
+    }
+
+    // Calculate accurate price
     const totalAmount = await Booking.calculatePrice(field.type, data.start_time, data.end_time);
     data.total_amount = totalAmount;
 
     const result = await Booking.create(data);
     res.status(201).json({ 
       message: 'Đặt sân thành công', 
-      bookingId: result.insertId 
+      bookingId: result.insertId,
+      totalAmount: totalAmount,
+      duration: formatDuration(data.start_time, data.end_time)
     });
   } catch (error) {
     console.error('Create booking error:', error);
@@ -31,11 +78,56 @@ exports.createBooking = async (req, res) => {
   }
 };
 
+// NEW: Calculate price endpoint for frontend
+exports.calculatePrice = async (req, res) => {
+  try {
+    const { field_id, start_time, end_time } = req.query;
+    
+    if (!field_id || !start_time || !end_time) {
+      return res.status(400).json({ error: 'Thiếu thông tin tính giá' });
+    }
+
+    // Validate time range
+    const [startHour, startMinute] = start_time.split(':').map(Number);
+    const [endHour, endMinute] = end_time.split(':').map(Number);
+    const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+    
+    if (durationMinutes < 30 || durationMinutes > 180) {
+      return res.status(400).json({ error: 'Thời gian không hợp lệ' });
+    }
+
+    const field = await Field.findById(field_id);
+    if (!field) {
+      return res.status(400).json({ error: 'Không tìm thấy sân' });
+    }
+
+    const totalAmount = await Booking.calculatePrice(field.type, start_time, end_time);
+    const duration = formatDuration(start_time, end_time);
+
+    res.json({
+      totalAmount,
+      duration,
+      fieldType: field.type,
+      pricePerHour: Math.round(totalAmount / (durationMinutes / 60))
+    });
+  } catch (error) {
+    console.error('Calculate price error:', error);
+    res.status(500).json({ error: 'Lỗi tính giá' });
+  }
+};
+
 exports.getUserBookings = async (req, res) => {
   try {
     const { userId } = req.params;
     const bookings = await Booking.getByUserId(userId);
-    res.json(bookings);
+    
+    // Add duration info to each booking
+    const bookingsWithDuration = bookings.map(booking => ({
+      ...booking,
+      duration: formatDuration(booking.start_time, booking.end_time)
+    }));
+    
+    res.json(bookingsWithDuration);
   } catch (error) {
     console.error('Get user bookings error:', error);
     res.status(500).json({ error: 'Không thể lấy lịch sử đặt sân' });
@@ -144,8 +236,14 @@ exports.getAllBookings = async (req, res) => {
       ${whereClause}
     `, params);
 
+    // FIXED: Add duration to each booking using local function
+    const bookingsWithDuration = results.map(booking => ({
+      ...booking,
+      duration: formatDuration(booking.start_time, booking.end_time)
+    }));
+
     res.json({
-      bookings: results,
+      bookings: bookingsWithDuration,
       pagination: {
         page,
         limit,
@@ -159,7 +257,7 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
-// ADD THIS METHOD FOR RECENT BOOKINGS
+// FIXED: Recent bookings with local formatDuration
 exports.getRecentBookings = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -178,8 +276,14 @@ exports.getRecentBookings = async (req, res) => {
       LIMIT ?
     `, [limit]);
     
-    console.log('Recent bookings found:', results.length);
-    res.json(results);
+    // FIXED: Add duration to each booking using local function
+    const bookingsWithDuration = results.map(booking => ({
+      ...booking,
+      duration: formatDuration(booking.start_time, booking.end_time)
+    }));
+    
+    console.log('Recent bookings found:', bookingsWithDuration.length);
+    res.json(bookingsWithDuration);
   } catch (error) {
     console.error('Get recent bookings error:', error);
     res.status(500).json({ error: 'Lỗi lấy danh sách đặt sân' });
@@ -211,6 +315,42 @@ exports.updateBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const updateData = req.body;
+
+    // Validate time range if times are being updated
+    if (updateData.start_time && updateData.end_time) {
+      const [startHour, startMinute] = updateData.start_time.split(':').map(Number);
+      const [endHour, endMinute] = updateData.end_time.split(':').map(Number);
+      const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+      
+      if (durationMinutes < 30 || durationMinutes > 180) {
+        return res.status(400).json({ error: 'Thời gian không hợp lệ' });
+      }
+
+      // Check for conflicts (excluding current booking)
+      const hasConflict = await Booking.getBookingConflicts(
+        updateData.field_id,
+        updateData.booking_date,
+        updateData.start_time,
+        updateData.end_time,
+        bookingId
+      );
+
+      if (hasConflict.length > 0) {
+        return res.status(400).json({ error: 'Khung giờ này đã có người đặt' });
+      }
+
+      // Recalculate price if time or field changed
+      if (updateData.field_id) {
+        const field = await Field.findById(updateData.field_id);
+        if (field) {
+          updateData.total_amount = await Booking.calculatePrice(
+            field.type, 
+            updateData.start_time, 
+            updateData.end_time
+          );
+        }
+      }
+    }
 
     const result = await Booking.update(bookingId, updateData);
     if (result.affectedRows === 0) {
@@ -251,11 +391,31 @@ exports.createManualBooking = async (req, res) => {
       return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
     }
 
+    // Validate time range
+    const [startHour, startMinute] = start_time.split(':').map(Number);
+    const [endHour, endMinute] = end_time.split(':').map(Number);
+    const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+    
+    if (durationMinutes < 30 || durationMinutes > 180) {
+      return res.status(400).json({ error: 'Thời gian không hợp lệ' });
+    }
+
     const hasConflict = await Booking.checkTimeConflict(field_id, booking_date, start_time, end_time);
     if (hasConflict) {
       return res.status(400).json({ error: 'Khung giờ này đã có người đặt' });
     }
 
+    // Calculate price if not provided
+    let finalAmount = total_amount;
+    if (!finalAmount) {
+      const field = await Field.findById(field_id);
+      if (field) {
+        finalAmount = await Booking.calculatePrice(field.type, start_time, end_time);
+      }
+    }
+
+    // Create or find user
+    const User = require('../models/User');
     const user = await User.findOrCreateByPhone(phone_number, customer_name);
     
     const result = await Booking.createManual({
@@ -264,13 +424,15 @@ exports.createManualBooking = async (req, res) => {
       booking_date,
       start_time,
       end_time,
-      total_amount,
+      total_amount: finalAmount,
       notes
     });
 
     res.status(201).json({ 
       message: 'Tạo booking thành công', 
-      bookingId: result.insertId 
+      bookingId: result.insertId,
+      totalAmount: finalAmount,
+      duration: formatDuration(start_time, end_time)
     });
   } catch (error) {
     console.error('Create manual booking error:', error);

@@ -167,13 +167,14 @@ function Contact() {
                   key={index}
                   className="group bg-white dark:bg-gray-900 rounded-xl p-4 md:p-6 shadow-md hover:shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 transform hover:-translate-y-2"
                 >
-                  <div className={`w-12 h-12 ${info.bgColor} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                    <i className={`${info.icon} ${info.color} text-lg`}></i>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className={`w-12 h-12 ${info.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                      <i className={`${info.icon} ${info.color} text-lg`}></i>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                      {info.title}
+                    </h3>
                   </div>
-                  
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    {info.title}
-                  </h3>
                   
                   {info.link ? (
                     <a

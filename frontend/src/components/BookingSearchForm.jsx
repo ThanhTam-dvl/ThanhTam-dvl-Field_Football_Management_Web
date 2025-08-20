@@ -18,12 +18,60 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
     setIsVisible(true);
   }, []);
 
-  // Generate time options
-  const timeOptions = [];
-  for (let h = 6; h <= 22; h++) {
-    timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
-    if (h < 22) timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
-  }
+  // Tạo danh sách giờ từ hiện tại đến 22:30
+  const generateTimeOptions = () => {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    const timeOptions = [];
+    
+    // Nếu là ngày hôm nay, chỉ hiển thị giờ từ hiện tại trở đi
+    const startHour = form.date === today ? currentHour : 6;
+    const startMinute = form.date === today ? (currentMinute > 30 ? 30 : 0) : 0;
+    
+    for (let h = startHour; h <= 22; h++) {
+      // Với giờ hiện tại, bắt đầu từ phút phù hợp
+      if (h === startHour) {
+        if (startMinute === 0) {
+          timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
+          if (h < 22) timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
+        } else if (startMinute === 30) {
+          timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
+        }
+      } else {
+        // Các giờ khác thì bình thường
+        timeOptions.push(`${h.toString().padStart(2, '0')}:00`);
+        if (h < 22) timeOptions.push(`${h.toString().padStart(2, '0')}:30`);
+      }
+    }
+    
+    return timeOptions;
+  };
+
+  // Tạo danh sách giờ kết thúc dựa trên giờ bắt đầu
+  const generateEndTimeOptions = (startTime) => {
+    if (!startTime) return [];
+    
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const endOptions = [];
+    
+    // Tính thời gian bắt đầu theo phút
+    const startTotalMinutes = startHour * 60 + startMinute;
+    
+    // Tạo các option từ 30 phút sau start time đến 22:30
+    for (let totalMinutes = startTotalMinutes + 30; totalMinutes <= 22 * 60 + 30; totalMinutes += 30) {
+      const hour = Math.floor(totalMinutes / 60);
+      const minute = totalMinutes % 60;
+      
+      if (hour <= 22) {
+        endOptions.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      }
+    }
+    
+    return endOptions;
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,35 +85,31 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
       });
     } else {
       if (name === 'startTime') {
-        const start = parseInt(value.split(':')[0]);
-        if (start) {
-          const newEndOptions = [];
-          for (let i = start + 1; i <= 22; i++) {
-            newEndOptions.push(i);
-          }
-          setEndTimeOptions(newEndOptions);
-          
-          if (form.endTime && parseInt(form.endTime.split(':')[0]) <= start) {
-            setForm(prev => ({ ...prev, endTime: '' }));
-          }
-        } else {
-          setEndTimeOptions([]);
+        const newEndOptions = generateEndTimeOptions(value);
+        setEndTimeOptions(newEndOptions);
+        
+        // Reset end time nếu không hợp lệ
+        const newForm = { ...form, startTime: value };
+        if (form.endTime && !newEndOptions.includes(form.endTime)) {
+          newForm.endTime = '';
         }
+        setForm(newForm);
+      } else if (name === 'date') {
+        // Reset thời gian khi đổi ngày
+        setForm(prev => ({ ...prev, [name]: value, startTime: '', endTime: '' }));
+        setEndTimeOptions([]);
+      } else {
+        setForm(prev => ({ ...prev, [name]: value }));
       }
-      setForm(prev => ({ ...prev, [name]: value }));
     }
   };
 
+  // Cập nhật end time options khi form.startTime thay đổi
   useEffect(() => {
     if (form.startTime) {
-      const start = parseInt(form.startTime.split(':')[0]);
-      const newEndOptions = [];
-      for (let i = start + 1; i <= 22; i++) {
-        newEndOptions.push(i);
-      }
-      setEndTimeOptions(newEndOptions);
+      setEndTimeOptions(generateEndTimeOptions(form.startTime));
     }
-  }, []);
+  }, [form.startTime]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,12 +119,23 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
       return;
     }
 
-    const start = parseInt(form.startTime.split(':')[0]);
-    const end = parseInt(form.endTime.split(':')[0]);
-    const duration = end - start;
+    // Tính toán thời gian theo phút
+    const [startHour, startMinute] = form.startTime.split(':').map(Number);
+    const [endHour, endMinute] = form.endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    
+    const durationHours = durationMinutes / 60;
 
-    if (duration < 1 || duration > 3) {
-      alert('Bạn chỉ được phép đặt sân từ 1 đến 3 giờ.');
+    if (durationMinutes < 30) {
+      alert('Thời gian tối thiểu là 30 phút');
+      return;
+    }
+
+    if (durationHours > 3) {
+      alert('Bạn chỉ được phép đặt sân tối đa 3 giờ');
       return;
     }
 
@@ -115,15 +170,33 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
 
   const getDuration = () => {
     if (!form.startTime || !form.endTime) return 0;
-    const start = parseInt(form.startTime.split(':')[0]);
-    const end = parseInt(form.endTime.split(':')[0]);
-    return end - start;
+    
+    const [startHour, startMinute] = form.startTime.split(':').map(Number);
+    const [endHour, endMinute] = form.endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    
+    if (minutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h${minutes}p`;
+    }
   };
 
   const fieldTypeLabels = {
     '5': '5v5',
     '7': '7v7', 
     '11': '11v11'
+  };
+
+  // Lấy min date (không được chọn ngày quá khứ)
+  const getMinDate = () => {
+    return new Date().toISOString().split('T')[0];
   };
 
   return (
@@ -167,7 +240,7 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
               name="date"
               value={form.date}
               onChange={handleChange}
-              min={new Date().toISOString().split('T')[0]}
+              min={getMinDate()}
               required
               className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-200 text-sm"
             />
@@ -191,7 +264,7 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
                 className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-200 text-sm"
               >
                 <option value="">Chọn giờ bắt đầu</option>
-                {timeOptions.slice(0, -1).map((time) => (
+                {generateTimeOptions().map((time) => (
                   <option key={time} value={time}>{time}</option>
                 ))}
               </select>
@@ -211,11 +284,9 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
                 className="w-full px-3 py-2.5 md:px-4 md:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-all duration-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">Chọn giờ kết thúc</option>
-                {timeOptions
-                  .filter(time => form.startTime && time > form.startTime)
-                  .map((time) => (
-                    <option key={time} value={time}>{time}</option>
-                  ))}
+                {endTimeOptions.map((time) => (
+                  <option key={time} value={time}>{time}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -226,14 +297,19 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
               <div className="flex items-center space-x-2">
                 <i className="fas fa-hourglass-half text-blue-500 text-sm"></i>
                 <span className="text-sm text-blue-700 dark:text-blue-300">
-                  Thời gian thuê: <span className="font-semibold">{getDuration()} giờ</span>
+                  Thời gian thuê: <span className="font-semibold">{getDuration()}</span>
                 </span>
               </div>
-              {(getDuration() < 1 || getDuration() > 3) && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                  ⚠️ Thời gian thuê phải từ 1-3 giờ
-                </p>
-              )}
+              {(() => {
+                const [startHour, startMinute] = form.startTime.split(':').map(Number);
+                const [endHour, endMinute] = form.endTime.split(':').map(Number);
+                const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+                return (durationMinutes < 30 || durationMinutes > 180) && (
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    ⚠️ Thời gian thuê phải từ 30 phút đến 3 giờ
+                  </p>
+                );
+              })()}
             </div>
           )}
 
@@ -312,7 +388,7 @@ function BookingSearchForm({ setFields, setSearchInfo }) {
                 </div>
                 <div className="flex items-center space-x-2">
                   <i className="fas fa-clock w-3 text-center"></i>
-                  <span>{form.startTime} - {form.endTime} ({getDuration()} giờ)</span>
+                  <span>{form.startTime} - {form.endTime} ({getDuration()})</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <i className="fas fa-futbol w-3 text-center"></i>

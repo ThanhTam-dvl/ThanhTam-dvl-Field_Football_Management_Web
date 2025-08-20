@@ -102,9 +102,22 @@ function Booking() {
 
   const getDuration = () => {
     if (!searchInfo?.startTime || !searchInfo?.endTime) return 0;
-    const start = parseInt(searchInfo.startTime.split(':')[0]);
-    const end = parseInt(searchInfo.endTime.split(':')[0]);
-    return end - start;
+    
+    const [startHour, startMinute] = searchInfo.startTime.split(':').map(Number);
+    const [endHour, endMinute] = searchInfo.endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    
+    if (minutes === 0) {
+      return `${hours}h`;
+    } else {
+      return `${hours}h${minutes}p`;
+    }
   };
 
   const getFieldTypeLabels = (types) => {
@@ -234,7 +247,7 @@ function Booking() {
                         </span>
                         <span className="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md">
                           <i className="fas fa-clock mr-1"></i>
-                          {searchInfo.startTime} - {searchInfo.endTime} ({getDuration()}h)
+                          {searchInfo.startTime} - {searchInfo.endTime} ({getDuration()})
                         </span>
                         <span className="inline-flex items-center px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-md">
                           <i className="fas fa-futbol mr-1"></i>
@@ -365,4 +378,5 @@ function Booking() {
   );
 }
 
+// FIXED: Ensure proper default export
 export default Booking;

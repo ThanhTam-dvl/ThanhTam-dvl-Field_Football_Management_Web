@@ -123,7 +123,7 @@ const MatchTable = ({ matches, onRefresh, loading }) => {
                     <div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Số người</div>
                       <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                        {match.current_players}/{match.max_players || '∞'}
+                        {match.current_players}
                       </div>
                     </div>
                     
@@ -244,9 +244,7 @@ const MatchTable = ({ matches, onRefresh, loading }) => {
                         <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                           {match.current_players}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          / {match.max_players || '∞'}
-                        </div>
+                        
                       </div>
                     </td>
                     

@@ -56,14 +56,36 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
     }).format(price);
   };
 
-  const getDuration = () => {
-    if (!searchInfo?.startTime || !searchInfo?.endTime) return 1;
-    const start = parseInt(searchInfo.startTime.split(':')[0]);
-    const end = parseInt(searchInfo.endTime.split(':')[0]);
-    return end - start;
+  // Tính thời gian chính xác theo phút
+  const getDurationAndAmount = () => {
+    if (!searchInfo?.startTime || !searchInfo?.endTime) {
+      return { duration: '1h', totalAmount: slot.price };
+    }
+    
+    const [startHour, startMinute] = searchInfo.startTime.split(':').map(Number);
+    const [endHour, endMinute] = searchInfo.endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    
+    let durationText;
+    if (minutes === 0) {
+      durationText = `${hours}h`;
+    } else {
+      durationText = `${hours}h${minutes}p`;
+    }
+    
+    // Tính tiền theo phút (slot.price là giá 1 giờ)
+    const totalAmount = (slot.price * durationMinutes) / 60;
+    
+    return { duration: durationText, totalAmount };
   };
 
-  const totalAmount = slot.price * getDuration();
+  const { duration, totalAmount } = getDurationAndAmount();
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 transition-all duration-300">
@@ -129,7 +151,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                       {formatDate(searchInfo.date)}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {slot.label} ({getDuration()} giờ)
+                      {searchInfo.startTime} - {searchInfo.endTime} ({duration})
                     </div>
                   </div>
                 </div>
@@ -146,7 +168,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                       Tổng tiền
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatPrice(slot.price)} x {getDuration()} giờ
+                      {formatPrice(slot.price)}/giờ x {duration}
                     </div>
                   </div>
                 </div>
@@ -169,7 +191,8 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                 Thông tin liên hệ
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* FIXED: Proper grid layout for contact fields */}
+              <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Số điện thoại *
@@ -199,20 +222,20 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                     className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 text-sm"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Ghi chú (tùy chọn)
-                </label>
-                <textarea
-                  name="note"
-                  value={form.note}
-                  onChange={handleChange}
-                  placeholder="Thông tin thêm về đặt sân..."
-                  rows="3"
-                  className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 text-sm resize-none"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Ghi chú (tùy chọn)
+                  </label>
+                  <textarea
+                    name="note"
+                    value={form.note}
+                    onChange={handleChange}
+                    placeholder="Thông tin thêm về đặt sân..."
+                    rows="3"
+                    className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 transition-colors duration-200 text-sm resize-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -223,8 +246,9 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                 Phương thức thanh toán
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label className={`relative flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+              {/* FIXED: Improved payment method layout */}
+              <div className="space-y-3">
+                <label className={`relative block p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                   form.payment === 'cash'
                     ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                     : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-green-300 dark:hover:border-green-700'
@@ -237,7 +261,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <div className="flex items-center space-x-3 w-full">
+                  <div className="flex items-center space-x-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       form.payment === 'cash'
                         ? 'bg-green-500 text-white'
@@ -245,7 +269,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                     }`}>
                       <i className="fas fa-money-bill-wave text-sm"></i>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <div className={`font-medium text-sm ${
                         form.payment === 'cash'
                           ? 'text-green-700 dark:text-green-300'
@@ -257,15 +281,15 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                         Thanh toán tại sân
                       </div>
                     </div>
+                    {form.payment === 'cash' && (
+                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                        <i className="fas fa-check text-white text-xs"></i>
+                      </div>
+                    )}
                   </div>
-                  {form.payment === 'cash' && (
-                    <div className="absolute top-2 right-2 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-                      <i className="fas fa-check text-white text-xs"></i>
-                    </div>
-                  )}
                 </label>
 
-                <label className={`relative flex items-center p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+                <label className={`relative block p-3 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                   form.payment === 'online'
                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                     : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-300 dark:hover:border-blue-700'
@@ -278,7 +302,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                     onChange={handleChange}
                     className="sr-only"
                   />
-                  <div className="flex items-center space-x-3 w-full">
+                  <div className="flex items-center space-x-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                       form.payment === 'online'
                         ? 'bg-blue-500 text-white'
@@ -286,7 +310,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                     }`}>
                       <i className="fas fa-credit-card text-sm"></i>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <div className={`font-medium text-sm ${
                         form.payment === 'online'
                           ? 'text-blue-700 dark:text-blue-300'
@@ -298,12 +322,12 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                         Thanh toán trực tuyến
                       </div>
                     </div>
+                    {form.payment === 'online' && (
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i className="fas fa-check text-white text-xs"></i>
+                      </div>
+                    )}
                   </div>
-                  {form.payment === 'online' && (
-                    <div className="absolute top-2 right-2 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                      <i className="fas fa-check text-white text-xs"></i>
-                    </div>
-                  )}
                 </label>
               </div>
 
@@ -337,7 +361,7 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col md:flex-row gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
@@ -359,9 +383,9 @@ function BookingModal({ field, slot, searchInfo, onClose, onConfirm }) {
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-check-circle text-xs"></i>
+                  
                     <span>Xác nhận đặt sân</span>
-                    <span className="hidden md:inline">- {formatPrice(totalAmount)}</span>
+                    <span className="hidden sm:inline">- {formatPrice(totalAmount)}</span>
                   </>
                 )}
               </button>

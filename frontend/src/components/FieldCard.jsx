@@ -50,14 +50,39 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
     return match ? match[1] : '5';
   };
 
-  const getDuration = () => {
-    if (!searchInfo?.startTime || !searchInfo?.endTime) return 1;
-    const start = parseInt(searchInfo.startTime.split(':')[0]);
-    const end = parseInt(searchInfo.endTime.split(':')[0]);
-    return end - start;
+  // FIXED: Calculate duration more accurately with minutes
+  const getDurationInfo = () => {
+    if (!searchInfo?.startTime || !searchInfo?.endTime) {
+      return { duration: 1, durationText: '1h' };
+    }
+    
+    const [startHour, startMinute] = searchInfo.startTime.split(':').map(Number);
+    const [endHour, endMinute] = searchInfo.endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    const durationMinutes = endTotalMinutes - startTotalMinutes;
+    
+    const hours = Math.floor(durationMinutes / 60);
+    const minutes = durationMinutes % 60;
+    
+    let durationText;
+    if (minutes === 0) {
+      durationText = `${hours}h`;
+    } else {
+      durationText = `${hours}h${minutes}p`;
+    }
+    
+    // Return duration in hours (for calculation)
+    const durationInHours = durationMinutes / 60;
+    
+    return { duration: durationInHours, durationText };
   };
 
-  const totalPrice = slot.price * getDuration();
+  const { duration, durationText } = getDurationInfo();
+  
+  // FIXED: Calculate total price based on exact duration
+  const totalPrice = slot.price * duration;
 
   return (
     <div className={`transition-all duration-500 hover-lift ${
@@ -88,13 +113,13 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
         {/* Content - Ultra Compact */}
         <div className="p-3 space-y-3">
           
-          {/* Time & Price */}
+          {/* Time & Price Per Hour */}
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2.5 border border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <i className="fas fa-clock text-green-600 dark:text-green-400 text-xs"></i>
                 <span className="font-medium text-green-800 dark:text-green-200 text-sm">
-                  {slot.label || `${searchInfo?.startTime || ''} - ${searchInfo?.endTime || ''}`}
+                  {searchInfo?.startTime || ''} - {searchInfo?.endTime || ''}
                 </span>
               </div>
               
@@ -109,21 +134,26 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
             </div>
           </div>
 
-          {/* Location & Duration Info */}
+          {/* Duration & Location Info */}
           <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <i className="fas fa-map-marker-alt text-gray-400"></i>
               <span>Khu vực trung tâm</span>
             </div>
-            <span className="text-gray-500">{getDuration()}h</span>
+            <div className="flex items-center space-x-1">
+              <i className="fas fa-hourglass-half text-gray-400"></i>
+              <span className="font-medium">{durationText}</span>
+            </div>
           </div>
+
+          
         </div>
 
         {/* Footer - Minimal */}
         <div className="px-3 pb-3">
           <div className="flex items-center justify-between">
             <div className="text-left">
-              <div className="font-bold text-gray-900 dark:text-gray-100 text-sm">
+              <div className="font-bold text-gray-900 dark:text-gray-100 text-lg">
                 {formatPrice(totalPrice)}đ
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -133,7 +163,7 @@ function FieldCard({ field, searchInfo, onBook, index = 0 }) {
 
             <button
               onClick={() => onBook(field, slot)}
-              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md flex items-center space-x-1.5 text-xs"
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md flex items-center space-x-1.5 text-sm"
             >
               <i className="fas fa-calendar-plus"></i>
               <span>Đặt ngay</span>
