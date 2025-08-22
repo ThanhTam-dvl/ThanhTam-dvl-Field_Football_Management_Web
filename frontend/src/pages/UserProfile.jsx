@@ -141,7 +141,7 @@ function UserProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-900 dark:to-green-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-emerald-200 dark:from-gray-900 dark:to-green-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <i className="fas fa-user-slash text-white text-2xl"></i>
@@ -171,12 +171,12 @@ function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-900 dark:to-green-900">
+          <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 dark:from-gray-900 dark:to-green-900">
       <Header />
       
       <main className="pt-12 md:pt-14">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-green-600 to-green-700 dark:from-gray-800 dark:to-green-800 text-white py-4 md:py-6">
+        <section className="bg-gradient-to-r from-green-500 to-green-600 dark:from-gray-800 dark:to-green-800 text-white py-4 md:py-6">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <div className="flex items-center space-x-3 mb-4 md:mb-0">

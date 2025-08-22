@@ -33,19 +33,19 @@ function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-25 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-green-900">
+    <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-emerald-200 dark:from-gray-900 dark:via-gray-800 dark:to-green-900">
       <Header />
       
       <main>
         {/* Hero Section */}
         <section className="relative min-h-[55vh] md:min-h-[65vh] flex items-center justify-center overflow-hidden">
-          {/* Background - Fixed để không bị parallax */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700 dark:from-gray-800 dark:via-green-800 dark:to-emerald-900">
+          {/* Background - Soft Pastel Green */}
+          <div className="absolute inset-0 bg-gradient-to-br from-green-300 via-green-100 to-emerald-200 dark:from-gray-800 dark:via-green-800 dark:to-emerald-900">
             {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-20 left-20 w-72 h-72 bg-green-500 rounded-full blur-3xl animate-float"></div>
-              <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-20 left-20 w-72 h-72 bg-green-300 rounded-full blur-3xl animate-float"></div>
+              <div className="absolute bottom-20 right-20 w-96 h-96 bg-emerald-300 rounded-full blur-3xl animate-float" style={{animationDelay: '1s'}}></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-green-400 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
             </div>
 
             {/* Football Field Pattern */}
@@ -65,25 +65,25 @@ function Home() {
           </div>
 
           {/* Content */}
-          <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 text-center text-white">
+          <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 text-center text-green-800 dark:text-white">
             <div className={`transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {/* Badge */}
-              <div className="inline-flex items-center space-x-2 bg-white/10 dark:bg-white/5 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 mb-4 md:mb-6">
-                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium">Nền tảng đặt sân #1 Việt Nam</span>
+              <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-green-200 rounded-full px-3 py-1.5 mb-4 md:mb-6">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-green-800">Nền tảng đặt sân #1 Việt Nam</span>
               </div>
 
               {/* Main Heading */}
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+              <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight text-green-800 dark:text-white">
                 Đặt sân bóng{' '}
-                <span className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   nhanh chóng
                 </span>
                 <br />
                 & dễ dàng
               </h1>
 
-              <p className="text-sm md:text-base text-green-100 mb-4 md:mb-6 max-w-md md:max-w-xl mx-auto leading-relaxed px-2">
+              <p className="text-sm md:text-base text-green-700 dark:text-green-100 mb-4 md:mb-6 max-w-md md:max-w-xl mx-auto leading-relaxed px-2">
                 Tìm và đặt sân bóng yêu thích chỉ với vài thao tác đơn giản. 
                 Kết nối với cộng đồng bóng đá khắp cả nước.
               </p>
@@ -92,10 +92,8 @@ function Home() {
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-3 mb-4 md:mb-6 px-2">
                 <a
                   href="/booking"
-                  className="group relative px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-yellow-500 text-green-800 font-bold rounded-lg shadow-lg shadow-yellow-400/30 hover:shadow-yellow-400/50 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden w-full sm:w-auto text-center"
+                  className="group relative px-4 py-2.5 bg-green-500 text-white font-bold rounded-lg shadow-lg hover:bg-green-600 transition-all duration-300 transform hover:-translate-y-1 overflow-hidden w-full sm:w-auto text-center"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
                   <div className="relative flex items-center justify-center space-x-2">
                     <i className="fas fa-calendar-plus text-sm"></i>
                     <span className="text-sm">Đặt sân ngay</span>
@@ -105,7 +103,7 @@ function Home() {
 
                 <a
                   href="/find-match"
-                  className="px-4 py-2.5 bg-white/20 backdrop-blur-sm border-2 border-white/30 text-white font-semibold rounded-lg hover:bg-white/30 transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center space-x-2 w-full sm:w-auto"
+                  className="px-4 py-2.5 bg-white/80 backdrop-blur-sm border-2 border-green-300 text-green-700 font-semibold rounded-lg hover:bg-white transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                   <i className="fas fa-search text-sm"></i>
                   <span className="text-sm">Tìm kèo đá</span>
@@ -120,26 +118,18 @@ function Home() {
                     className={`transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                     style={{ transitionDelay: `${index * 100}ms` }}
                   >
-                    <div className="bg-white/15 dark:bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-2.5 md:p-3 hover:bg-white/25 dark:hover:bg-white/15 transition-all duration-300 transform hover:-translate-y-1 group">
+                    <div className="bg-white/60 backdrop-blur-sm border border-green-200 rounded-lg p-2.5 md:p-3 hover:bg-white/80 transition-all duration-300 transform hover:-translate-y-1 group">
                       <div className="mb-1">
-                        <i className={`${stat.icon} text-base md:text-lg text-yellow-300 group-hover:scale-110 transition-transform duration-300`}></i>
+                        <i className={`${stat.icon} text-base md:text-lg text-green-600 group-hover:scale-110 transition-transform duration-300`}></i>
                       </div>
-                      <div className="text-lg md:text-xl font-bold mb-0.5 text-white">{stat.number}</div>
-                      <div className="text-green-100 text-xs">{stat.label}</div>
+                      <div className="text-lg md:text-xl font-bold mb-0.5 text-green-800">{stat.number}</div>
+                      <div className="text-green-700 text-xs">{stat.label}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-
-          {/* Scroll Indicator */}
-          {/* <div className="absolute bottom-4 md:bottom-8 left-1/2 transform -translate-x-1/2 text-white/80 animate-bounce">
-            <div className="flex flex-col items-center space-y-1">
-              <span className="text-xs md:text-sm">Cuộn xuống</span>
-              <i className="fas fa-chevron-down text-sm"></i>
-            </div>
-          </div> */}
         </section>
 
         {/* Field Status Section */}
@@ -212,7 +202,7 @@ function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-12 lg:py-16 bg-gradient-to-r from-green-600 to-green-700 relative overflow-hidden">
+        <section className="py-12 lg:py-16 bg-gradient-to-r from-green-500 to-green-600 relative overflow-hidden">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full">

@@ -109,29 +109,31 @@ function Contact() {
       
       <main>
         {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-green-600 via-green-700 to-emerald-700 dark:from-gray-800 dark:via-green-800 dark:to-emerald-900 overflow-hidden">
+        <section className="relative bg-gradient-to-br from-green-300 via-green-100 to-emerald-200 dark:from-gray-800 dark:via-green-800 dark:to-emerald-900 overflow-hidden">
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-10 left-10 w-32 h-32 border-2 border-white rounded-full animate-float"></div>
-            <div className="absolute top-20 right-20 w-24 h-24 border-2 border-white rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-            <div className="absolute bottom-20 left-1/3 w-40 h-40 border-2 border-white rounded-full animate-float" style={{animationDelay: '2s'}}></div>
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute top-10 left-10 w-32 h-32 bg-green-300 rounded-full blur-2xl animate-float"></div>
+            <div className="absolute top-20 right-20 w-24 h-24 bg-emerald-300 rounded-full blur-2xl animate-float" style={{animationDelay: '1s'}}></div>
+            <div className="absolute bottom-20 left-1/3 w-40 h-40 bg-green-400 rounded-full blur-2xl animate-float" style={{animationDelay: '2s'}}></div>
+            <div className="absolute top-1/2 right-10 w-20 h-20 bg-blue-300 rounded-full blur-2xl animate-float" style={{animationDelay: '3s'}}></div>
+            <div className="absolute bottom-10 left-20 w-16 h-16 bg-teal-300 rounded-full blur-2xl animate-float" style={{animationDelay: '4s'}}></div>
           </div>
 
           <div className="relative max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-8 md:py-12">
-            <div className={`text-center text-white transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
-              <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5 mb-4">
-                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
-                <span className="text-xs font-medium">Luôn sẵn sàng hỗ trợ bạn</span>
+            <div className={`text-center text-green-800 dark:text-white transition-all duration-700 ${isVisible ? 'animate-slide-up' : 'opacity-0 translate-y-10'}`}>
+              <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-green-200 rounded-full px-3 py-1.5 mb-4">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-green-800">Luôn sẵn sàng hỗ trợ bạn</span>
               </div>
 
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4 text-green-800 dark:text-white">
                 Liên hệ{' '}
-                <span className="bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   với chúng tôi
                 </span>
               </h1>
               
-              <p className="text-sm md:text-base lg:text-lg text-green-100 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm md:text-base lg:text-lg text-green-700 dark:text-green-100 max-w-2xl mx-auto leading-relaxed">
                 Mọi thắc mắc, góp ý hoặc hỗ trợ, chúng tôi luôn sẵn sàng lắng nghe bạn
               </p>
 
@@ -139,17 +141,17 @@ function Contact() {
               <div className="grid grid-cols-2 gap-4 mt-6 md:mt-8 max-w-md mx-auto">
                 <a
                   href="tel:0868713558"
-                  className="flex items-center justify-center space-x-2 bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg p-3 hover:bg-white/30 transition-all duration-300"
+                  className="flex items-center justify-center space-x-2 bg-white/60 backdrop-blur-sm border border-green-200 rounded-lg p-3 hover:bg-white/80 transition-all duration-300"
                 >
-                  <i className="fas fa-phone text-green-300"></i>
-                  <span className="text-sm font-medium">Gọi ngay</span>
+                  <i className="fas fa-phone text-green-600"></i>
+                  <span className="text-sm font-medium text-green-800">Gọi ngay</span>
                 </a>
                 <a
                   href="mailto:nguyenthanhtam10062004@gmail.com"
-                  className="flex items-center justify-center space-x-2 bg-white/20 backdrop-blur-sm border border-white/20 rounded-lg p-3 hover:bg-white/30 transition-all duration-300"
+                  className="flex items-center justify-center space-x-2 bg-white/60 backdrop-blur-sm border border-green-200 rounded-lg p-3 hover:bg-white/80 transition-all duration-300"
                 >
-                  <i className="fas fa-envelope text-blue-300"></i>
-                  <span className="text-sm font-medium">Gửi email</span>
+                  <i className="fas fa-envelope text-blue-600"></i>
+                  <span className="text-sm font-medium text-green-800">Gửi email</span>
                 </a>
               </div>
             </div>
@@ -181,7 +183,7 @@ function Contact() {
                       href={info.link}
                       target={info.link.startsWith('http') ? '_blank' : undefined}
                       rel={info.link.startsWith('http') ? 'noopener noreferrer' : undefined}
-                      className="text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-300 text-sm leading-relaxed block"
+                      className="text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors duration-300 text-sm leading-relaxed block"
                     >
                       {info.content}
                     </a>
